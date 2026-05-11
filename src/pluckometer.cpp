@@ -51,7 +51,7 @@ typedef struct
 typedef enum
 {
   PLUCKOMETER_ONSET_METHOD = 0,
-  PLUCKOMETER_ONSET_THRESHOLD = 1,
+  PLUCKOMETER_ONSET_SENSITIVITY = 1,
   PLUCKOMETER_SILENCE_THRESHOLD = 2,
   PLUCKOMETER_WINDOW_SECONDS = 3,
   PLUCKOMETER_SCALE_CV_OUT = 4,
@@ -59,9 +59,11 @@ typedef enum
   PLUCKOMETER_LEAKY_MIX = 6,
   PLUCKOMETER_LEAKY_DECAY_SECONDS = 7,
   PLUCKOMETER_CV_SMOOTHING = 8,
-  PLUCKOMETER_INPUT = 9,
-  PLUCKOMETER_MIDI_OUT = 10,
-  PLUCKOMETER_CV_OUT = 11
+  PLUCKOMETER_CV_OUT_CLAMP = 9,
+  PLUCKOMETER_INPUT = 10,
+  PLUCKOMETER_MIDI_OUT = 11,
+  PLUCKOMETER_CV_OUT = 12,
+  PLUCKOMETER_CV_TRIGGER_OUT = 13
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -74,6 +76,33 @@ static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
     "kl",
     "mkl",
     "specflux"};
+
+static const float kOnsetSensitivityMin = 0.0f;
+static const float kOnsetSensitivityMax = 1.0f;
+static const float kCvTriggerLow = 0.0f;
+static const float kCvTriggerHigh = 10.0f;
+static const float kCvTriggerDurationSeconds = 0.01f;
+
+static void
+get_cv_out_clamp_bounds(int clamp_mode, float *min_cv, float *max_cv)
+{
+  switch (clamp_mode)
+  {
+  case 0:
+    *min_cv = -10.0f;
+    *max_cv = 0.0f;
+    break;
+  case 2:
+    *min_cv = 0.0f;
+    *max_cv = 10.0f;
+    break;
+  case 1:
+  default:
+    *min_cv = -5.0f;
+    *max_cv = 5.0f;
+    break;
+  }
+}
 
 typedef struct
 {
@@ -94,7 +123,7 @@ typedef struct
   fvec_t *onset;
   smpl_t samplerate;
   const float *onset_method;
-  const float *onset_threshold;
+  const float *onset_sensitivity;
   const float *silence_threshold;
   const float *window_seconds;
   const float *scale_cv_out;
@@ -102,8 +131,10 @@ typedef struct
   const float *leaky_mix;
   const float *leaky_decay_seconds;
   const float *cv_smoothing;
+  const float *cv_out_clamp;
   const float *input;
   float *cv_out;
+  float *cv_trigger_out;
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -111,6 +142,8 @@ typedef struct
   float leaky_onset_level;
   float cv_out_lp;
   float target_cv_out;
+  uint32_t trigger_samples_remaining;
+  uint32_t trigger_duration_samples;
 } Pluckometer;
 
 /** map uris */
@@ -214,6 +247,8 @@ instantiate(const LV2_Descriptor *descriptor,
   self->leaky_onset_level = 0.0f;
   self->cv_out_lp = 0.0f;
   self->target_cv_out = 0.0f;
+  self->trigger_samples_remaining = 0;
+  self->trigger_duration_samples = std::max(1u, (uint32_t)floorf(self->samplerate * kCvTriggerDurationSeconds));
   return (LV2_Handle)self;
 }
 
@@ -228,8 +263,8 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_ONSET_METHOD:
     self->onset_method = (float *)data;
     break;
-  case PLUCKOMETER_ONSET_THRESHOLD:
-    self->onset_threshold = (float *)data;
+  case PLUCKOMETER_ONSET_SENSITIVITY:
+    self->onset_sensitivity = (float *)data;
     break;
   case PLUCKOMETER_SILENCE_THRESHOLD:
     self->silence_threshold = (float *)data;
@@ -252,6 +287,9 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
     break;
+  case PLUCKOMETER_CV_OUT_CLAMP:
+    self->cv_out_clamp = (float *)data;
+    break;
   case PLUCKOMETER_INPUT:
     self->input = (float *)data;
     break;
@@ -260,6 +298,9 @@ connect_port(LV2_Handle instance,
     break;
   case PLUCKOMETER_CV_OUT:
     self->cv_out = (float *)data;
+    break;
+  case PLUCKOMETER_CV_TRIGGER_OUT:
+    self->cv_trigger_out = (float *)data;
     break;
   }
 }
@@ -288,16 +329,21 @@ run(LV2_Handle instance, uint32_t n_samples)
 
   // Hosts should connect all ports before run(), but guard anyway to avoid
   // hard crashes if a host/plugin state is incomplete.
-  if (!self || !self->midi_out || !self->input || !self->cv_out ||
-      !self->onset_method || !self->onset_threshold || !self->silence_threshold ||
+  if (!self || !self->midi_out || !self->input || !self->cv_out || !self->cv_trigger_out ||
+      !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
-      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing)
+      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
+      !self->cv_out_clamp)
   {
     if (self && self->cv_out)
     {
       for (uint32_t i = 0; i < n_samples; i++)
       {
         self->cv_out[i] = 0.0f;
+        if (self->cv_trigger_out)
+        {
+          self->cv_trigger_out[i] = kCvTriggerLow;
+        }
       }
     }
     return;
@@ -308,8 +354,14 @@ run(LV2_Handle instance, uint32_t n_samples)
   lv2_atom_forge_sequence_head(&self->forge, &self->frame, 0);
   const float *input = self->input;
 
-  // Smoothing factor for CV output (minimum 0.01 to ensure CV always moves)
-  const float alpha = std::max(0.01f, std::min(1.0f, *self->cv_smoothing));
+  // Reverse smoothing control so higher settings produce a smoother (slower) CV response.
+  // Keep a small floor so output still converges.
+  const float cv_smoothing = std::max(0.01f, std::min(1.0f, *self->cv_smoothing));
+  const float alpha = std::max(0.01f, 1.01f - cv_smoothing);
+  const int clamp_mode = std::max(0, std::min(2, (int)floorf(*self->cv_out_clamp + 0.5f)));
+  float cv_out_min = -5.0f;
+  float cv_out_max = 5.0f;
+  get_cv_out_clamp_bounds(clamp_mode, &cv_out_min, &cv_out_max);
 
   // Fill the ring buffer
   for (uint32_t i = 0; i < n_samples; i++)
@@ -337,8 +389,10 @@ run(LV2_Handle instance, uint32_t n_samples)
   {
     self->ringbuf->Read((unsigned char *)self->ab_in->data, sizeof(smpl_t) * self->hopsize);
     const int method_index = std::max(0, std::min(NUM_ONSET_METHODS - 1, (int)*self->onset_method));
+    const float onset_sensitivity = std::max(kOnsetSensitivityMin, std::min(kOnsetSensitivityMax, *self->onset_sensitivity));
+    const float aubio_onset_threshold = powf(10.0f, -onset_sensitivity);
     aubio_onset_set_silence(self->onsets[method_index], (float)*self->silence_threshold);
-    aubio_onset_set_threshold(self->onsets[method_index], (float)*self->onset_threshold);
+    aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
     aubio_onset_do(self->onsets[method_index], self->ab_in, self->onset);
 
     self->curlevel = aubio_level_detection(self->ab_in, *self->silence_threshold);
@@ -350,6 +404,7 @@ run(LV2_Handle instance, uint32_t n_samples)
         smpl_t level = 127 + (int)floorf(self->curlevel);
         send_controller(level, midicontroller_onsetlevel, midichannel_onsetlevel, self);
         current_onset = 1;
+        self->trigger_samples_remaining = self->trigger_duration_samples;
       }
     }
 
@@ -372,13 +427,25 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
     self->target_cv_out = onset_metric * (*self->scale_cv_out) + (*self->offset_cv_out);
+    self->target_cv_out = std::max(cv_out_min, std::min(cv_out_max, self->target_cv_out));
   }
 
   // Fill CV output for ALL samples in this block
   for (uint32_t i = 0; i < n_samples; i++)
   {
     self->cv_out_lp = alpha * self->target_cv_out + (1.0f - alpha) * self->cv_out_lp;
+    self->cv_out_lp = std::max(cv_out_min, std::min(cv_out_max, self->cv_out_lp));
     self->cv_out[i] = self->cv_out_lp;
+
+    if (self->trigger_samples_remaining > 0)
+    {
+      self->cv_trigger_out[i] = kCvTriggerHigh;
+      self->trigger_samples_remaining--;
+    }
+    else
+    {
+      self->cv_trigger_out[i] = kCvTriggerLow;
+    }
   }
 }
 

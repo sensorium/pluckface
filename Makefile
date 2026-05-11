@@ -108,7 +108,7 @@ all: initialize $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(targets)
 lv2syms:
 	echo "_lv2_descriptor" > lv2syms
 
-$(BUILDDIR)manifest.ttl: lv2ttl/manifest.ttl.in Makefile
+$(BUILDDIR)manifest.ttl: lv2ttl/manifest.ttl.in lv2ttl/manifest.modgui.in Makefile
 	@mkdir -p $(BUILDDIR)
 	sed "s/@LV2NAME@/$(LV2NAME)/;s/@LIB_EXT@/$(LIB_EXT)/" \
 	  lv2ttl/manifest.ttl.in > $(BUILDDIR)manifest.ttl

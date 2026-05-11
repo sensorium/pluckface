@@ -66,17 +66,21 @@
   a lv2:InputPort ,
   lv2:ControlPort ;
   lv2:index 1 ;
-  lv2:symbol "onset_threshold" ;
-  lv2:name "Onset Threshold";
-  lv2:default 0.3 ;
-  lv2:minimum 0.1 ;
+  lv2:symbol "onset_sensitivity" ;
+  lv2:name "Sensitivity";
+  lv2:default 0.523 ;
+  lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
   lv2:scalePoint [
-  rdfs:label "0.1 (more detections)" ;
-  rdf:value 0.1
+  #rdfs:label "0 (less sensitive)" ;
+  rdf:value 0.0
   ];
   lv2:scalePoint [
-  rdfs:label "1 (less)" ;
+  #rdfs:label "0.523 (legacy default)" ;
+  rdf:value 0.523
+  ];
+  lv2:scalePoint [
+  #rdfs:label "1 (more sensitive)" ;
   rdf:value 1.0
   ];
   ], [
@@ -139,19 +143,19 @@
   lv2:symbol "offset_cv_out" ;
   lv2:name "Offset CV Out";
   lv2:default 0.0 ;
-  lv2:minimum -5.0 ;
-  lv2:maximum 5.0 ;
+  lv2:minimum -50.0 ;
+  lv2:maximum 50.0 ;
   lv2:scalePoint [
-  rdfs:label "-5" ;
-  rdf:value -5.0
+  rdfs:label "-50" ;
+  rdf:value -50.0
   ];
   lv2:scalePoint [
   rdfs:label "0" ;
   rdf:value 0.0
   ];
   lv2:scalePoint [
-  rdfs:label "5" ;
-  rdf:value 5.0
+  rdfs:label "50" ;
+  rdf:value 50.0
   ];
   ], [
   a lv2:InputPort ,
@@ -214,9 +218,29 @@
   rdf:value 1.0
   ];
   ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 9 ;
+  lv2:symbol "cv_out_clamp" ;
+  lv2:name "CV Out Clamp" ;
+  lv2:default 1 ;
+  lv2:minimum 0 ;
+  lv2:maximum 2 ;
+  lv2:portProperty lv2:enumeration ;
+  lv2:scalePoint [
+  rdfs:label "-10 to 0" ;
+  rdf:value 0
+  ] , [
+  rdfs:label "-5 to 5" ;
+  rdf:value 1
+  ] , [
+  rdfs:label "0 to 10" ;
+  rdf:value 2
+  ];
+  ], [
   a lv2:AudioPort ,
   lv2:InputPort ;
-  lv2:index 9 ;
+  lv2:index 10 ;
   lv2:symbol "in" ;
   lv2:name "In"
   ], [
@@ -224,14 +248,21 @@
   atom:AtomPort ;
   atom:bufferType atom:Sequence ;
   atom:supports midi:MidiEvent ;
-  lv2:index 10 ;
+  lv2:index 11 ;
   lv2:symbol "midi_out" ;
   lv2:name "Midi Out"
 	], [
   a lv2:OutputPort, lv2:CVPort, mod:CVPort;
-  lv2:index 11;
-  lv2:minimum -5.0 ;
-  lv2:maximum 5.0 ;
+  lv2:index 12;
+  lv2:minimum -10.0 ;
+  lv2:maximum 10.0 ;
   lv2:symbol "cv_out";
   lv2:name "CV Output";
+	], [
+  a lv2:OutputPort, lv2:CVPort, mod:CVPort;
+  lv2:index 13;
+  lv2:minimum 0.0 ;
+  lv2:maximum 10.0 ;
+  lv2:symbol "cv_trigger_out";
+  lv2:name "CV Trigger Output";
 	] .
