@@ -37,7 +37,7 @@
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define PLUCKOMETER_URI "https://github.org/sensorium/"
+#define PLUCKOMETER_URI "urn:sensorium:pluckometer"
 #define RB_SIZE 16384
 #define NUM_ONSET_METHODS 9
 

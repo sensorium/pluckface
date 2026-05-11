@@ -16,7 +16,7 @@
 	foaf:mbox <mailto:faveflave@gmail.com> ;
 	foaf:homepage <https://github.org/sensorium/> .
 
-  <https://github.org/sensorium/>
+  <urn:sensorium:pluckometer>
   # a lv2:Plugin, mod:ControlVoltagePlugin;
   a lv2:Plugin , lv2:UtilityPlugin, doap:Project ;
   doap:license <http://usefulinc.com/doap/licenses/gpl> ;
