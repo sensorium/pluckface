@@ -1,0 +1,38 @@
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+
+<https://github.org/sensorium/>
+    modgui:gui [
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/icon-onsetdetector.html> ;
+        modgui:stylesheet <modgui/stylesheet-onsetdetector.css> ;
+        modgui:screenshot <modgui/screenshot-onsetdetector.png> ;
+        modgui:thumbnail <modgui/thumbnail-onsetdetector.png> ;
+        modgui:brand "sensorium" ;
+        modgui:label "Onset Rate Detector" ;
+        modgui:model "boxy" ;
+        modgui:panel "1-select-4-knobs" ;
+        modgui:color "lava" ;
+        modgui:knob "aluminium" ;
+        modgui:port [
+            lv2:index 0 ;
+            lv2:symbol "onset_method" ;
+            lv2:name "Onset Method" ;
+        ] , [
+            lv2:index 1 ;
+            lv2:symbol "onset_threshold" ;
+            lv2:name "Onset Threshold" ;
+        ] , [
+            lv2:index 2 ;
+            lv2:symbol "silence_threshold" ;
+            lv2:name "Silence Threshold" ;
+        ] , [
+            lv2:index 3 ;
+            lv2:symbol "pitch_method" ;
+            lv2:name "Pitch Detection Method" ;
+        ] , [
+            lv2:index 4 ;
+            lv2:symbol "pitch_threshold" ;
+            lv2:name "Pitch Detection Threshold" ;
+        ] ;
+    ] .

@@ -1,0 +1,13 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "chat.tools.terminal.autoApprove": {
+        "make": true,
+        "pkg-config": true,
+        "/^ruby -e 'require \"yaml\"; YAML\\.load_file\\(\"\\.github/workflows/build\\.yml\"\\); puts \"YAML_OK\"'$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "diff": true,
+        "true": true
+    }
+}

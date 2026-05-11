@@ -1,0 +1,237 @@
+@prefix atom:   <http://lv2plug.in/ns/ext/atom#> .
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix units:  <http://lv2plug.in/ns/extensions/units#> .
+@prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
+@prefix midi:   <http://lv2plug.in/ns/ext/midi#> .
+@prefix mod:    <http://moddevices.com/ns/mod#>.
+@prefix modgui: <http://moddevices.com/ns/modgui#>.
+
+<https://github.org/sensorium/>
+	a foaf:Person ;
+	foaf:name "sensorium" ;
+	foaf:mbox <mailto:faveflave@gmail.com> ;
+	foaf:homepage <https://github.org/sensorium/> .
+
+  <https://github.org/sensorium/>
+  # a lv2:Plugin, mod:ControlVoltagePlugin;
+  a lv2:Plugin , lv2:UtilityPlugin, doap:Project ;
+  doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+  doap:maintainer <https://github.org/sensorium/> ;
+  doap:name "Onsetdetector" ;
+  lv2:microVersion 0 ;lv2:minorVersion 0 ;
+  lv2:optionalFeature lv2:hardRTCapable ;
+  lv2:port [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 0 ;
+  lv2:symbol "onset_method" ;
+  lv2:name "Onset Method" ;
+  lv2:default 0 ;
+  lv2:minimum 0 ;
+  lv2:maximum 8 ;
+  lv2:portProperty lv2:enumeration ;
+  lv2:scalePoint  [
+  rdfs:label "default (hfc)" ;
+  rdf:value 0
+  ] , [
+  rdfs:label "energy" ;
+  rdf:value 1
+  ] , [
+  rdfs:label "hfc" ;
+  rdf:value 2
+  ] , [
+  rdfs:label "complex" ;
+  rdf:value 3
+  ] , [
+  rdfs:label "phase" ;
+  rdf:value 4
+  ] , [
+  rdfs:label "specdiff" ;
+  rdf:value 5
+  ] , [
+  rdfs:label "kl" ;
+  rdf:value 6
+  ] , [
+  rdfs:label "mkl" ;
+  rdf:value 7
+  ] , [
+  rdfs:label "specflux" ;
+  rdf:value 8
+  ]
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 1 ;
+  lv2:symbol "onset_threshold" ;
+  lv2:name "Onset Threshold";
+  lv2:default 0.3 ;
+  lv2:minimum 0.1 ;
+  lv2:maximum 1.0 ;
+  lv2:scalePoint [
+  rdfs:label "0.1 (more detections)" ;
+  rdf:value 0.1
+  ];
+  lv2:scalePoint [
+  rdfs:label "1 (less)" ;
+  rdf:value 1.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 2 ;
+  lv2:symbol "silence_threshold" ;
+  lv2:name "Silence Threshold";
+  lv2:default -90.0 ;
+  lv2:minimum -90.0 ;
+  lv2:maximum -10.0 ;
+  units:unit units:db ;
+  lv2:scalePoint [
+  rdfs:label "-90.0" ;
+  rdf:value -90.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "-10" ;
+  rdf:value -10.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 3 ;
+  lv2:symbol "window_seconds" ;
+  lv2:name "Window Seconds";
+  lv2:default 2.0 ;
+  lv2:minimum 0.5 ;
+  lv2:maximum 10.0 ;
+  units:unit units:seconds ;
+  lv2:scalePoint [
+  rdfs:label "0.5" ;
+  rdf:value 0.5
+  ];
+  lv2:scalePoint [
+  rdfs:label "10" ;
+  rdf:value 10.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 4 ;
+  lv2:symbol "scale_cv_out" ;
+  lv2:name "Scale CV Out";
+  lv2:default 0.2 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 10.0 ;
+  lv2:scalePoint [
+  rdfs:label "0" ;
+  rdf:value 0.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "10" ;
+  rdf:value 10.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 5 ;
+  lv2:symbol "offset_cv_out" ;
+  lv2:name "Offset CV Out";
+  lv2:default 0.0 ;
+  lv2:minimum -5.0 ;
+  lv2:maximum 5.0 ;
+  lv2:scalePoint [
+  rdfs:label "-5" ;
+  rdf:value -5.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "0" ;
+  rdf:value 0.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "5" ;
+  rdf:value 5.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 6 ;
+  lv2:symbol "leaky_mix" ;
+  lv2:name "Leaky Mix";
+  lv2:default 0.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 1.0 ;
+  lv2:scalePoint [
+  rdfs:label "0" ;
+  rdf:value 0.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "1" ;
+  rdf:value 1.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 7 ;
+  lv2:symbol "leaky_decay_seconds" ;
+  lv2:name "Leaky Decay";
+  lv2:default 1.0 ;
+  lv2:minimum 0.05 ;
+  lv2:maximum 10.0 ;
+  units:unit units:seconds ;
+  lv2:scalePoint [
+  rdfs:label "0.05" ;
+  rdf:value 0.05
+  ];
+  lv2:scalePoint [
+  rdfs:label "1" ;
+  rdf:value 1.0
+  ];
+  lv2:scalePoint [
+  rdfs:label "10" ;
+  rdf:value 10.0
+  ];
+  ], [
+  a lv2:InputPort ,
+  lv2:ControlPort ;
+  lv2:index 8 ;
+  lv2:symbol "cv_smoothing" ;
+  lv2:name "CV Smoothing";
+  lv2:default 0.01 ;
+  lv2:minimum 0.01 ;
+  lv2:maximum 1.0 ;
+  lv2:scalePoint [
+  rdfs:label "0.01" ;
+  rdf:value 0.01
+  ];
+  lv2:scalePoint [
+  rdfs:label "0.1" ;
+  rdf:value 0.1
+  ];
+  lv2:scalePoint [
+  rdfs:label "1" ;
+  rdf:value 1.0
+  ];
+  ], [
+  a lv2:AudioPort ,
+  lv2:InputPort ;
+  lv2:index 9 ;
+  lv2:symbol "in" ;
+  lv2:name "In"
+  ], [
+  a lv2:OutputPort ,
+  atom:AtomPort ;
+  atom:bufferType atom:Sequence ;
+  atom:supports midi:MidiEvent ;
+  lv2:index 10 ;
+  lv2:symbol "midi_out" ;
+  lv2:name "Midi Out"
+	], [
+  a lv2:OutputPort, lv2:CVPort, mod:CVPort;
+  lv2:index 11;
+  lv2:minimum -5.0 ;
+  lv2:maximum 5.0 ;
+  lv2:symbol "cv_out";
+  lv2:name "CV Output";
+	] .
