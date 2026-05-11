@@ -154,6 +154,7 @@ $(BUILDDIR)$(LV2NAME)$(LIB_EXT): src/$(LV2NAME).cpp $(OBJS) $(AUBIO_OBJS)
 	$(STRIP) $(STRIPFLAGS) $(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
 $(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl
+	@mkdir -p $(BUILDDIR)modgui
 	cp -r modgui/* $(BUILDDIR)modgui/
 
 # install/uninstall/clean target definitions

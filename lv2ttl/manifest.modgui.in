@@ -28,11 +28,11 @@
             lv2:name "Silence Threshold" ;
         ] , [
             lv2:index 3 ;
-            lv2:symbol "pitch_method" ;
-            lv2:name "Pitch Detection Method" ;
+            lv2:symbol "window_seconds" ;
+            lv2:name "Window Seconds" ;
         ] , [
             lv2:index 4 ;
-            lv2:symbol "pitch_threshold" ;
-            lv2:name "Pitch Detection Threshold" ;
+            lv2:symbol "scale_cv_out" ;
+            lv2:name "Scale CV Out" ;
         ] ;
     ] .
