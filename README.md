@@ -1,19 +1,19 @@
-onsetdetector.lv2 - Audio to Midi
+Pluckometer - Audio to Midi
 ==============================
 
-onsetdetector.lv2  uses the aubio toolkit for note onset and pitch detection
+Pluckometer uses the aubio toolkit for note onset and pitch detection
 on audio input and outputs midi.
 
 Install
 -------
-Compiling onsetdetector requires the LV2 SDK, bash, gnu-make, and a c-compiler.
+Compiling pluckometer requires the LV2 SDK, bash, gnu-make, and a c-compiler.
 
 By default the build uses a system aubio install (via pkg-config). If aubio
 development headers are not installed, use the vendored fallback mode.
 
 ```bash
-  git clone git://github.com/sensorium/onsetdetector.lv2.git
-  cd onsetdetector.lv2
+  git clone git://github.com/sensorium/pluckometer.lv2.git
+  cd pluckometer.lv2
   make
   sudo make install PREFIX=/usr
 ```

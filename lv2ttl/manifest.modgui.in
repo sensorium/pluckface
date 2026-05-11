@@ -4,12 +4,12 @@
 <https://github.org/sensorium/>
     modgui:gui [
         modgui:resourcesDirectory <modgui> ;
-        modgui:iconTemplate <modgui/icon-onsetdetector.html> ;
-        modgui:stylesheet <modgui/stylesheet-onsetdetector.css> ;
-        modgui:screenshot <modgui/screenshot-onsetdetector.png> ;
-        modgui:thumbnail <modgui/thumbnail-onsetdetector.png> ;
+        modgui:iconTemplate <modgui/icon-pluckometer.html> ;
+        modgui:stylesheet <modgui/stylesheet-pluckometer.css> ;
+        modgui:screenshot <modgui/screenshot-pluckometer.png> ;
+        modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
         modgui:brand "sensorium" ;
-        modgui:label "Onset Rate Detector" ;
+        modgui:label "Pluckometer" ;
         modgui:model "boxy" ;
         modgui:panel "1-select-4-knobs" ;
         modgui:color "lava" ;

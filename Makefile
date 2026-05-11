@@ -9,15 +9,15 @@ AUBIO_MODE ?= system
 STRIP?=strip
 STRIPFLAGS?=-s
 
-onsetdetector_VERSION?=$(shell git describe --tags HEAD 2>/dev/null\
+pluckometer_VERSION?=$(shell git describe --tags HEAD 2>/dev/null\
 									 	| sed 's/-g.*$$//;s/^v//' || echo "LV2")
 ###############################################################################
 LIB_EXT=.so
 BUILDDIR=build/
 
 LOADLIBES=-lm
-LV2NAME=onsetdetector
-BUNDLE=onsetdetector.lv2
+LV2NAME=pluckometer
+BUNDLE=pluckometer.lv2
 targets=
 SRCS =
 
@@ -50,9 +50,9 @@ targets+=$(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
 ifneq ($(MOD),)
   targets+=$(BUILDDIR)modgui
-  MODLABEL=mod:label \"Onsetdetector\";
+	MODLABEL=mod:label \"Pluckometer\";
   MODBRAND=mod:brand \"sensorium\";
-  MODGUILABEL=modgui:label \"Onsetdetector\";
+	MODGUILABEL=modgui:label \"Pluckometer\";
   MODGUIBRAND=modgui:brand \"sensorium\";
 else
   MODLABEL=
@@ -61,7 +61,7 @@ endif
 
 ###############################################################################
 # extract versions
-LV2VERSION=$(onsetdetector_VERSION)
+LV2VERSION=$(pluckometer_VERSION)
 include git2lv2.mk
 
 # check for build-dependencies

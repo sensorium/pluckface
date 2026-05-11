@@ -37,7 +37,7 @@
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define ONSETDETECTOR_URI "https://github.org/sensorium/"
+#define PLUCKOMETER_URI "https://github.org/sensorium/"
 #define RB_SIZE 16384
 #define NUM_ONSET_METHODS 9
 
@@ -46,22 +46,22 @@
 typedef struct
 {
   LV2_URID midi_MidiEvent;
-} onsetdetector_URIs;
+} pluckometer_URIs;
 
 typedef enum
 {
-  ONSETDETECTOR_ONSET_METHOD = 0,
-  ONSETDETECTOR_ONSET_THRESHOLD = 1,
-  ONSETDETECTOR_SILENCE_THRESHOLD = 2,
-  ONSETDETECTOR_WINDOW_SECONDS = 3,
-  ONSETDETECTOR_SCALE_CV_OUT = 4,
-  ONSETDETECTOR_OFFSET_CV_OUT = 5,
-  ONSETDETECTOR_LEAKY_MIX = 6,
-  ONSETDETECTOR_LEAKY_DECAY_SECONDS = 7,
-  ONSETDETECTOR_CV_SMOOTHING = 8,
-  ONSETDETECTOR_INPUT = 9,
-  ONSETDETECTOR_MIDI_OUT = 10,
-  ONSETDETECTOR_CV_OUT = 11
+  PLUCKOMETER_ONSET_METHOD = 0,
+  PLUCKOMETER_ONSET_THRESHOLD = 1,
+  PLUCKOMETER_SILENCE_THRESHOLD = 2,
+  PLUCKOMETER_WINDOW_SECONDS = 3,
+  PLUCKOMETER_SCALE_CV_OUT = 4,
+  PLUCKOMETER_OFFSET_CV_OUT = 5,
+  PLUCKOMETER_LEAKY_MIX = 6,
+  PLUCKOMETER_LEAKY_DECAY_SECONDS = 7,
+  PLUCKOMETER_CV_SMOOTHING = 8,
+  PLUCKOMETER_INPUT = 9,
+  PLUCKOMETER_MIDI_OUT = 10,
+  PLUCKOMETER_CV_OUT = 11
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -81,7 +81,7 @@ typedef struct
   LV2_Log_Log *log;
   LV2_Log_Logger logger;
   LV2_URID_Map *map;
-  onsetdetector_URIs uris;
+  pluckometer_URIs uris;
   LV2_Atom_Forge forge;
   LV2_Atom_Forge_Frame frame;
   LV2_Atom_Sequence *midi_out;
@@ -111,17 +111,17 @@ typedef struct
   float leaky_onset_level;
   float cv_out_lp;
   float target_cv_out;
-} Onsetdetector;
+} Pluckometer;
 
 /** map uris */
 static void
-map_mem_uris(LV2_URID_Map *map, onsetdetector_URIs *uris)
+map_mem_uris(LV2_URID_Map *map, pluckometer_URIs *uris)
 {
   uris->midi_MidiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 }
 
 static void
-forge_midimessage(Onsetdetector *self,
+forge_midimessage(Pluckometer *self,
                   uint32_t tme,
                   const uint8_t *const buffer,
                   uint32_t size)
@@ -140,7 +140,7 @@ forge_midimessage(Onsetdetector *self,
 
 void send_controller(smpl_t value, uint8_t controller, uint8_t channel, void *usr)
 {
-  Onsetdetector *self = (Onsetdetector *)usr;
+  Pluckometer *self = (Pluckometer *)usr;
   uint8_t event[3];
   event[0] = 0xB0 | (channel & 0x0F);    // Status byte: Control Change + Channel
   event[1] = (uint8_t)controller & 0x7F; // Controller number
@@ -157,7 +157,7 @@ instantiate(const LV2_Descriptor *descriptor,
   (void)descriptor;
   (void)bundle_path;
 
-  Onsetdetector *self = (Onsetdetector *)calloc(1, sizeof(Onsetdetector));
+  Pluckometer *self = (Pluckometer *)calloc(1, sizeof(Pluckometer));
   if (!self)
   {
     return NULL;
@@ -182,7 +182,7 @@ instantiate(const LV2_Descriptor *descriptor,
   lv2_log_logger_init(&self->logger, self->map, self->log);
   if (!self->map)
   {
-    lv2_log_error(&self->logger, "onsetdetector.lv2 error: Host does not support urid:map\n");
+    lv2_log_error(&self->logger, "pluckometer.lv2 error: Host does not support urid:map\n");
     free(self);
     return NULL;
   }
@@ -203,7 +203,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->onsets_detected = new (std::nothrow) int8_t[size_detected];
   if (self->onsets_detected == nullptr)
   {
-    lv2_log_error(&self->logger, "onsetdetector.lv2 error: couldn't allocate memory for onsets_detected\n");
+    lv2_log_error(&self->logger, "pluckometer.lv2 error: couldn't allocate memory for onsets_detected\n");
     free(self);
     return NULL;
   }
@@ -222,43 +222,43 @@ connect_port(LV2_Handle instance,
              uint32_t port,
              void *data)
 {
-  Onsetdetector *self = (Onsetdetector *)instance;
+  Pluckometer *self = (Pluckometer *)instance;
   switch ((PortIndex)port)
   {
-  case ONSETDETECTOR_ONSET_METHOD:
+  case PLUCKOMETER_ONSET_METHOD:
     self->onset_method = (float *)data;
     break;
-  case ONSETDETECTOR_ONSET_THRESHOLD:
+  case PLUCKOMETER_ONSET_THRESHOLD:
     self->onset_threshold = (float *)data;
     break;
-  case ONSETDETECTOR_SILENCE_THRESHOLD:
+  case PLUCKOMETER_SILENCE_THRESHOLD:
     self->silence_threshold = (float *)data;
     break;
-  case ONSETDETECTOR_WINDOW_SECONDS:
+  case PLUCKOMETER_WINDOW_SECONDS:
     self->window_seconds = (float *)data;
     break;
-  case ONSETDETECTOR_SCALE_CV_OUT:
+  case PLUCKOMETER_SCALE_CV_OUT:
     self->scale_cv_out = (float *)data;
     break;
-  case ONSETDETECTOR_OFFSET_CV_OUT:
+  case PLUCKOMETER_OFFSET_CV_OUT:
     self->offset_cv_out = (float *)data;
     break;
-  case ONSETDETECTOR_LEAKY_MIX:
+  case PLUCKOMETER_LEAKY_MIX:
     self->leaky_mix = (float *)data;
     break;
-  case ONSETDETECTOR_LEAKY_DECAY_SECONDS:
+  case PLUCKOMETER_LEAKY_DECAY_SECONDS:
     self->leaky_decay_seconds = (float *)data;
     break;
-  case ONSETDETECTOR_CV_SMOOTHING:
+  case PLUCKOMETER_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
     break;
-  case ONSETDETECTOR_INPUT:
+  case PLUCKOMETER_INPUT:
     self->input = (float *)data;
     break;
-  case ONSETDETECTOR_MIDI_OUT:
+  case PLUCKOMETER_MIDI_OUT:
     self->midi_out = (LV2_Atom_Sequence *)data;
     break;
-  case ONSETDETECTOR_CV_OUT:
+  case PLUCKOMETER_CV_OUT:
     self->cv_out = (float *)data;
     break;
   }
@@ -284,7 +284,7 @@ uint8_t midichannel_onsetrate = 1;
 static void
 run(LV2_Handle instance, uint32_t n_samples)
 {
-  Onsetdetector *self = (Onsetdetector *)instance;
+  Pluckometer *self = (Pluckometer *)instance;
 
   // Hosts should connect all ports before run(), but guard anyway to avoid
   // hard crashes if a host/plugin state is incomplete.
@@ -385,7 +385,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 static void
 cleanup(LV2_Handle instance)
 {
-  Onsetdetector *self = (Onsetdetector *)instance;
+  Pluckometer *self = (Pluckometer *)instance;
   for (uint8_t i = 0; i < NUM_ONSET_METHODS; i++)
   {
     del_aubio_onset(self->onsets[i]);
@@ -409,7 +409,7 @@ extension_data(const char *uri)
 }
 
 static const LV2_Descriptor descriptor = {
-    ONSETDETECTOR_URI,
+    PLUCKOMETER_URI,
     instantiate,
     connect_port,
     activate,
