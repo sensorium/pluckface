@@ -2,3 +2,5 @@
 .waf*
 build
 .lock-waf*
+*.so
+*.dylib
