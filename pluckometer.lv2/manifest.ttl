@@ -18,6 +18,8 @@
         modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
         modgui:monitoredOutputs [
             lv2:symbol "input_level_db" ;
+        ] , [
+            lv2:symbol "cv_out_meter" ;
         ] ;
         modgui:brand "sensorium";
         modgui:label "Pluckometer";

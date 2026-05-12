@@ -1,15 +1,17 @@
 function(event, funcs) {
-    var meter = event.icon.find('.pluckometer-input-meter')[0];
-    if (!meter) {
+    var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
+    var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
+    if (!inputMeter && !cvMeter) {
         return;
     }
 
-    var segs = meter.querySelectorAll('.pluckometer-input-meter-seg');
-    if (!segs || !segs.length) {
+    var inputSegs = inputMeter ? inputMeter.querySelectorAll('.pluckometer-input-meter-seg') : [];
+    var cvSegs = cvMeter ? cvMeter.querySelectorAll('.pluckometer-cv-meter-seg') : [];
+    if ((!inputSegs || !inputSegs.length) && (!cvSegs || !cvSegs.length)) {
         return;
     }
 
-    function paint(level) {
+    function paint(segs, level) {
         for (var i = 0; i < segs.length; i++) {
             var seg = segs[i];
             var active = i < level;
@@ -20,21 +22,39 @@ function(event, funcs) {
     }
 
     if (event.type === 'start') {
-        paint(0);
+        if (inputSegs.length) paint(inputSegs, 0);
+        if (cvSegs.length) paint(cvSegs, 0);
         return;
     }
 
-    if (event.symbol === 'input_level_db') {
-        var db = event.value;
+    var symbol = event.symbol || (event.port && event.port.symbol);
+    var value = (typeof event.value !== 'undefined') ? event.value : (event.port && event.port.value);
+    var numericValue = parseFloat(value);
+    if (!isFinite(numericValue)) {
+        return;
+    }
+
+    if (symbol === 'input_level_db') {
+        var db = numericValue;
         if (db < -90.0) db = -90.0;
         if (db > 0.0) db = 0.0;
 
-        // Focus visual response on practical guitar range: -70 dB to -20 dB.
-        var norm = (db + 70.0) / 50.0;
+        // Use full meter range so quiet setups still show movement.
+        var norm = (db + 90.0) / 90.0;
         if (norm < 0.0) norm = 0.0;
         if (norm > 1.0) norm = 1.0;
 
-        var level = Math.round(norm * segs.length);
-        paint(level);
+        var inputLevel = Math.round(norm * inputSegs.length);
+        if (inputSegs.length) paint(inputSegs, inputLevel);
+        return;
+    }
+
+    if (symbol === 'cv_out_meter') {
+        var cv = numericValue;
+        if (cv < 0.0) cv = 0.0;
+        if (cv > 1.0) cv = 1.0;
+
+        var cvLevel = Math.round(cv * cvSegs.length);
+        if (cvSegs.length) paint(cvSegs, cvLevel);
     }
 }

@@ -55,7 +55,8 @@ typedef enum
   PLUCKOMETER_INPUT = 10,
   PLUCKOMETER_CV_OUT = 11,
   PLUCKOMETER_CV_TRIGGER_OUT = 12,
-  PLUCKOMETER_INPUT_LEVEL_DB = 13
+  PLUCKOMETER_INPUT_LEVEL_DB = 13,
+  PLUCKOMETER_CV_OUT_METER = 14
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -105,6 +106,7 @@ typedef struct
   float *cv_out;
   float *cv_trigger_out;
   float *input_level_db;
+  float *cv_out_meter;
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -243,6 +245,9 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_INPUT_LEVEL_DB:
     self->input_level_db = (float *)data;
     break;
+  case PLUCKOMETER_CV_OUT_METER:
+    self->cv_out_meter = (float *)data;
+    break;
   }
 }
 
@@ -285,6 +290,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self && self->input_level_db)
     {
       *self->input_level_db = -90.0f;
+    }
+    if (self && self->cv_out_meter)
+    {
+      *self->cv_out_meter = 0.0f;
     }
     return;
   }
@@ -410,6 +419,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
     if (invert) cv_value = 1.0f - cv_value;
     self->cv_out[i] = cv_value;
+    if (self->cv_out_meter)
+    {
+      *self->cv_out_meter = cv_value;
+    }
 
     if (self->trigger_samples_remaining > 0)
     {
