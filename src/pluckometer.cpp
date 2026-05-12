@@ -30,10 +30,7 @@
 #include "onset/onset.h"
 #endif
 
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
-#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
-#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
@@ -42,11 +39,6 @@
 #define NUM_ONSET_METHODS 9
 
 #define WINDOW_SECONDS_MAX 10
-
-typedef struct
-{
-  LV2_URID midi_MidiEvent;
-} pluckometer_URIs;
 
 typedef enum
 {
@@ -61,9 +53,8 @@ typedef enum
   PLUCKOMETER_CV_SMOOTHING = 8,
   PLUCKOMETER_CV_OUT_CLAMP = 9,
   PLUCKOMETER_INPUT = 10,
-  PLUCKOMETER_MIDI_OUT = 11,
-  PLUCKOMETER_CV_OUT = 12,
-  PLUCKOMETER_CV_TRIGGER_OUT = 13
+  PLUCKOMETER_CV_OUT = 11,
+  PLUCKOMETER_CV_TRIGGER_OUT = 12
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -110,10 +101,6 @@ typedef struct
   LV2_Log_Log *log;
   LV2_Log_Logger logger;
   LV2_URID_Map *map;
-  pluckometer_URIs uris;
-  LV2_Atom_Forge forge;
-  LV2_Atom_Forge_Frame frame;
-  LV2_Atom_Sequence *midi_out;
   RingBuffer *ringbuf;
   smpl_t bufsize;
   smpl_t hopsize;
@@ -145,41 +132,6 @@ typedef struct
   uint32_t trigger_samples_remaining;
   uint32_t trigger_duration_samples;
 } Pluckometer;
-
-/** map uris */
-static void
-map_mem_uris(LV2_URID_Map *map, pluckometer_URIs *uris)
-{
-  uris->midi_MidiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
-}
-
-static void
-forge_midimessage(Pluckometer *self,
-                  uint32_t tme,
-                  const uint8_t *const buffer,
-                  uint32_t size)
-{
-  LV2_Atom midiatom;
-  midiatom.type = self->uris.midi_MidiEvent;
-  midiatom.size = size;
-  if (0 == lv2_atom_forge_frame_time(&self->forge, tme))
-    return;
-  if (0 == lv2_atom_forge_raw(&self->forge, &midiatom, sizeof(LV2_Atom)))
-    return;
-  if (0 == lv2_atom_forge_raw(&self->forge, buffer, size))
-    return;
-  lv2_atom_forge_pad(&self->forge, sizeof(LV2_Atom) + size);
-}
-
-void send_controller(smpl_t value, uint8_t controller, uint8_t channel, void *usr)
-{
-  Pluckometer *self = (Pluckometer *)usr;
-  uint8_t event[3];
-  event[0] = 0xB0 | (channel & 0x0F);    // Status byte: Control Change + Channel
-  event[1] = (uint8_t)controller & 0x7F; // Controller number
-  event[2] = (uint8_t)value & 0x7F;      // Controller value
-  forge_midimessage(self, 0, event, 3);
-}
 
 static LV2_Handle
 instantiate(const LV2_Descriptor *descriptor,
@@ -219,8 +171,6 @@ instantiate(const LV2_Descriptor *descriptor,
     free(self);
     return NULL;
   }
-  lv2_atom_forge_init(&self->forge, self->map);
-  map_mem_uris(self->map, &self->uris);
   self->samplerate = (float)rate;
   self->bufsize = 512;
   self->hopsize = 256;
@@ -293,9 +243,6 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_INPUT:
     self->input = (float *)data;
     break;
-  case PLUCKOMETER_MIDI_OUT:
-    self->midi_out = (LV2_Atom_Sequence *)data;
-    break;
   case PLUCKOMETER_CV_OUT:
     self->cv_out = (float *)data;
     break;
@@ -317,11 +264,6 @@ deactivate(LV2_Handle instance)
   (void)instance;
 }
 
-uint8_t midicontroller_onsetlevel = 100;
-uint8_t midicontroller_onsetrate = 101;
-uint8_t midichannel_onsetlevel = 0;
-uint8_t midichannel_onsetrate = 1;
-
 static void
 run(LV2_Handle instance, uint32_t n_samples)
 {
@@ -329,7 +271,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 
   // Hosts should connect all ports before run(), but guard anyway to avoid
   // hard crashes if a host/plugin state is incomplete.
-  if (!self || !self->midi_out || !self->input || !self->cv_out || !self->cv_trigger_out ||
+  if (!self || !self->input || !self->cv_out || !self->cv_trigger_out ||
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
       !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
@@ -349,9 +291,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     return;
   }
 
-  const uint32_t capacity = self->midi_out->atom.size;
-  lv2_atom_forge_set_buffer(&self->forge, (uint8_t *)self->midi_out, capacity);
-  lv2_atom_forge_sequence_head(&self->forge, &self->frame, 0);
   const float *input = self->input;
 
   // Map smoothing control to an exponential time constant so the full range
@@ -408,10 +347,8 @@ run(LV2_Handle instance, uint32_t n_samples)
     int8_t current_onset = 0;
     if (fvec_get_sample(self->onset, 0)) // Onset detected
     {
-      if (self->curlevel != 1.0f) // Send controller message only if above silence threshold
+      if (self->curlevel != 1.0f)
       {
-        smpl_t level = 127 + (int)floorf(self->curlevel);
-        send_controller(level, midicontroller_onsetlevel, midichannel_onsetlevel, self);
         current_onset = 1;
         self->trigger_samples_remaining = self->trigger_duration_samples;
       }
@@ -428,11 +365,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     self->leaky_onset_level = leak * self->leaky_onset_level + (float)current_onset;
 
-    if (self->onsets_total != self->previous_total)
-    {
-      send_controller((smpl_t)self->onsets_total, midicontroller_onsetrate, midichannel_onsetrate, self);
-      self->previous_total = self->onsets_total;
-    }
+    self->previous_total = self->onsets_total;
 
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
     self->target_cv_out = onset_metric * (*self->scale_cv_out) + (*self->offset_cv_out);

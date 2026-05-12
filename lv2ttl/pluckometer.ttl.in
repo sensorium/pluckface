@@ -1,4 +1,3 @@
-@prefix atom:   <http://lv2plug.in/ns/ext/atom#> .
 @prefix doap:   <http://usefulinc.com/ns/doap#> .
 @prefix foaf:   <http://xmlns.com/foaf/0.1/> .
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
@@ -6,7 +5,6 @@
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units:  <http://lv2plug.in/ns/extensions/units#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
-@prefix midi:   <http://lv2plug.in/ns/ext/midi#> .
 
 <https://github.org/sensorium/>
 	a foaf:Person ;
@@ -241,23 +239,15 @@
   lv2:symbol "in" ;
   lv2:name "In"
   ], [
-  a lv2:OutputPort ,
-  atom:AtomPort ;
-  atom:bufferType atom:Sequence ;
-  atom:supports midi:MidiEvent ;
-  lv2:index 11 ;
-  lv2:symbol "midi_out" ;
-  lv2:name "Midi Out"
-	], [
   a lv2:OutputPort, lv2:CVPort;
-  lv2:index 12;
+  lv2:index 11;
   lv2:minimum -10.0 ;
   lv2:maximum 10.0 ;
   lv2:symbol "cv_out";
   lv2:name "CV Output";
 	], [
   a lv2:OutputPort, lv2:CVPort;
-  lv2:index 13;
+  lv2:index 12;
   lv2:minimum 0.0 ;
   lv2:maximum 10.0 ;
   lv2:symbol "cv_trigger_out";
