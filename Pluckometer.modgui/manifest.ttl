@@ -8,8 +8,8 @@
         modgui:stylesheet <modgui/stylesheet-pluckometer.css> ;
         modgui:screenshot <modgui/screenshot-pluckometer.png> ;
         modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
-        @MODBRAND@
-        @MODLABEL@
+        modgui:brand "sensorium" ;
+        modgui:label "Pluckometer" ;
         modgui:model "boxy" ;
         modgui:panel "10-sliders" ;
         modgui:color "pink" ;

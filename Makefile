@@ -59,6 +59,8 @@ else
   MODBRAND=
 endif
 
+MODGUI_FILES := $(shell find modgui -type f | sort)
+
 ###############################################################################
 # extract versions
 LV2VERSION=$(pluckometer_VERSION)
@@ -153,7 +155,7 @@ $(BUILDDIR)$(LV2NAME)$(LIB_EXT): src/$(LV2NAME).cpp $(OBJS) $(AUBIO_OBJS)
 		$(AUBIO_OBJS) $(OBJS)
 	$(STRIP) $(STRIPFLAGS) $(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
-$(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl
+$(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl $(MODGUI_FILES)
 	@mkdir -p $(BUILDDIR)modgui
 	cp -r modgui/* $(BUILDDIR)modgui/
 
