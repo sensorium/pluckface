@@ -13,8 +13,12 @@
         modgui:resourcesDirectory <modgui> ;
         modgui:iconTemplate <modgui/icon-pluckometer.html> ;
         modgui:stylesheet <modgui/stylesheet-pluckometer.css> ;
+        modgui:javascript <modgui/pluckometer.js> ;
         modgui:screenshot <modgui/screenshot-pluckometer.png> ;
         modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
+        modgui:monitoredOutputs [
+            lv2:symbol "input_level_db" ;
+        ] ;
         modgui:brand "sensorium";
         modgui:label "Pluckometer";
         modgui:model "boxy" ;

@@ -139,6 +139,57 @@
   top:120px;
 }
 
+/* = INPUT LEVEL METER
+================================================ */
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter {
+    position:absolute;
+    right:16px;
+    top:176px;
+    width:16px;
+    z-index:45;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-label {
+    color:#111;
+    font-family:"Nexa";
+    font-size:8px;
+    font-weight:bold;
+    letter-spacing:0.8px;
+    line-height:1;
+    margin-bottom:4px;
+    text-align:center;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-bar {
+    background:rgba(0,0,0,0.2);
+    border-radius:3px;
+    box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
+    display:flex;
+    flex-direction:column-reverse;
+    gap:2px;
+    padding:4px 3px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg {
+    background:rgba(255,255,255,0.30);
+    border-radius:2px;
+    height:7px;
+    transition:background-color 60ms linear;
+    width:100%;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.active {
+    background:#86ef4f;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.warn {
+    background:#facc15;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.hot {
+    background:#ef4444;
+}
+
 
 /* = FOOTSWITCH
 ================================================ */
