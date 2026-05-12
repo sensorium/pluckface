@@ -156,6 +156,7 @@ $(BUILDDIR)$(LV2NAME)$(LIB_EXT): src/$(LV2NAME).cpp $(OBJS) $(AUBIO_OBJS)
 	$(STRIP) $(STRIPFLAGS) $(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
 $(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl $(MODGUI_FILES)
+	@rm -rf $(BUILDDIR)modgui
 	@mkdir -p $(BUILDDIR)modgui
 	cp -r modgui/* $(BUILDDIR)modgui/
 
