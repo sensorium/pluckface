@@ -51,7 +51,7 @@ typedef enum
   PLUCKOMETER_LEAKY_MIX = 6,
   PLUCKOMETER_LEAKY_DECAY_SECONDS = 7,
   PLUCKOMETER_CV_SMOOTHING = 8,
-  PLUCKOMETER_CV_OUT_CLAMP = 9,
+  PLUCKOMETER_INVERT_CV = 9,
   PLUCKOMETER_INPUT = 10,
   PLUCKOMETER_CV_OUT = 11,
   PLUCKOMETER_CV_TRIGGER_OUT = 12
@@ -73,27 +73,8 @@ static const float kOnsetSensitivityMax = 1.0f;
 static const float kCvTriggerLow = 0.0f;
 static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.01f;
+static const float kCvParamRampSeconds = 0.01f;
 
-static void
-get_cv_out_clamp_bounds(int clamp_mode, float *min_cv, float *max_cv)
-{
-  switch (clamp_mode)
-  {
-  case 0:
-    *min_cv = -10.0f;
-    *max_cv = 0.0f;
-    break;
-  case 2:
-    *min_cv = 0.0f;
-    *max_cv = 10.0f;
-    break;
-  case 1:
-  default:
-    *min_cv = -5.0f;
-    *max_cv = 5.0f;
-    break;
-  }
-}
 
 typedef struct
 {
@@ -118,7 +99,7 @@ typedef struct
   const float *leaky_mix;
   const float *leaky_decay_seconds;
   const float *cv_smoothing;
-  const float *cv_out_clamp;
+  const float *invert_cv;
   const float *input;
   float *cv_out;
   float *cv_trigger_out;
@@ -127,8 +108,11 @@ typedef struct
   int16_t onsets_total;
   int16_t previous_total;
   float leaky_onset_level;
-  float cv_out_lp;
-  float target_cv_out;
+  float metric_lp;
+  float target_metric;
+  float ramped_scale;
+  float ramped_offset;
+  bool cv_params_initialized;
   uint32_t trigger_samples_remaining;
   uint32_t trigger_duration_samples;
 } Pluckometer;
@@ -195,8 +179,11 @@ instantiate(const LV2_Descriptor *descriptor,
   self->onsets_total = 0;
   self->previous_total = -1;
   self->leaky_onset_level = 0.0f;
-  self->cv_out_lp = 0.0f;
-  self->target_cv_out = 0.0f;
+  self->metric_lp = 0.0f;
+  self->target_metric = 0.0f;
+  self->ramped_scale = 1.0f;
+  self->ramped_offset = 0.0f;
+  self->cv_params_initialized = false;
   self->trigger_samples_remaining = 0;
   self->trigger_duration_samples = std::max(1u, (uint32_t)floorf(self->samplerate * kCvTriggerDurationSeconds));
   return (LV2_Handle)self;
@@ -237,8 +224,8 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
     break;
-  case PLUCKOMETER_CV_OUT_CLAMP:
-    self->cv_out_clamp = (float *)data;
+  case PLUCKOMETER_INVERT_CV:
+    self->invert_cv = (float *)data;
     break;
   case PLUCKOMETER_INPUT:
     self->input = (float *)data;
@@ -275,7 +262,7 @@ run(LV2_Handle instance, uint32_t n_samples)
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
       !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
-      !self->cv_out_clamp)
+      !self->invert_cv)
   {
     if (self && self->cv_out)
     {
@@ -306,10 +293,19 @@ run(LV2_Handle instance, uint32_t n_samples)
     alpha = 1.0f - expf(-1.0f / (smoothing_seconds * self->samplerate));
     alpha = std::max(0.000001f, std::min(1.0f, alpha));
   }
-  const int clamp_mode = std::max(0, std::min(2, (int)floorf(*self->cv_out_clamp + 0.5f)));
-  float cv_out_min = -5.0f;
-  float cv_out_max = 5.0f;
-  get_cv_out_clamp_bounds(clamp_mode, &cv_out_min, &cv_out_max);
+  const float cv_out_min = 0.0f;
+  const float cv_out_max = 1.0f;
+  const bool invert = (*self->invert_cv > 0.5f);
+
+  const float scale_target = *self->scale_cv_out;
+  const float offset_target = *self->offset_cv_out;
+  if (!self->cv_params_initialized)
+  {
+    self->ramped_scale = scale_target;
+    self->ramped_offset = offset_target;
+    self->cv_params_initialized = true;
+  }
+  const float param_alpha = 1.0f - expf(-1.0f / (kCvParamRampSeconds * self->samplerate));
 
   // Fill the ring buffer
   for (uint32_t i = 0; i < n_samples; i++)
@@ -368,16 +364,20 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->previous_total = self->onsets_total;
 
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
-    self->target_cv_out = onset_metric * (*self->scale_cv_out) + (*self->offset_cv_out);
-    self->target_cv_out = std::max(cv_out_min, std::min(cv_out_max, self->target_cv_out));
+    self->target_metric = onset_metric;
   }
 
   // Fill CV output for ALL samples in this block
   for (uint32_t i = 0; i < n_samples; i++)
   {
-    self->cv_out_lp = alpha * self->target_cv_out + (1.0f - alpha) * self->cv_out_lp;
-    self->cv_out_lp = std::max(cv_out_min, std::min(cv_out_max, self->cv_out_lp));
-    self->cv_out[i] = self->cv_out_lp;
+    self->metric_lp = alpha * self->target_metric + (1.0f - alpha) * self->metric_lp;
+    self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
+    self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
+
+    float cv_value = self->metric_lp * self->ramped_scale + self->ramped_offset;
+    cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
+    if (invert) cv_value = 1.0f - cv_value;
+    self->cv_out[i] = cv_value;
 
     if (self->trigger_samples_remaining > 0)
     {

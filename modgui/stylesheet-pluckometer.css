@@ -143,7 +143,7 @@
 /* = FOOTSWITCH
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .mod-footswitch {
-    background-image:url(/resources/footswitch.png{{{ns}}});
+    background-image:url(/resources/pedals/footswitch.png{{{ns}}});
     background-position:bottom center;
     background-repeat:no-repeat;
     background-size:auto 132px;
@@ -381,7 +381,7 @@
 }
 
 .mod-pedal-boxy{{{cns}}} .mod-slider .mod-slider-image {
-    background-image:url(/resources/slider.png{{{ns}}});
+    background-image:url(/resources/pedals/slider.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 110px;
     height:110px;

@@ -50,6 +50,17 @@ Regenerate metadata and plugin artifacts:
   make MOD=1 AUBIO_MODE=vendored all
 ```
 
+For MOD Desktop development, refresh the local `pluckometer.lv2` bundle from
+generated `build/` outputs in one step:
+
+```bash
+  make MOD=1 AUBIO_MODE=vendored sync-local-bundle
+```
+
+This updates `pluckometer.lv2/manifest.ttl`, `pluckometer.lv2/pluckometer.ttl`,
+the plugin binary, and replaces `pluckometer.lv2/modgui` with the latest
+generated assets.
+
 This regenerates, among other outputs:
 
 - `build/pluckometer.ttl` (generated from `lv2ttl/pluckometer.ttl.in`)
@@ -80,16 +91,23 @@ Before tagging or shipping a build:
   make MOD=1 AUBIO_MODE=vendored all
 ```
 
-2. Confirm template and generated metadata are in sync:
+2. Refresh the local bundle used by MOD Desktop so metadata and GUI assets match
+   generated outputs:
+
+```bash
+  make MOD=1 AUBIO_MODE=vendored sync-local-bundle
+```
+
+3. Confirm template and generated metadata are in sync:
 
 - `lv2ttl/pluckometer.ttl.in`
 - `build/pluckometer.ttl`
 - `pluckometer.lv2/pluckometer.ttl` (if committed in this repo)
 
-3. Install into test LV2 path and verify ports appear with expected names/ranges.
-4. Restart mod-ui (or reboot MOD device) and re-check the plugin UI after metadata changes.
-5. Run a quick smoke test:
+4. Install into test LV2 path and verify ports appear with expected names/ranges.
+5. Restart mod-ui (or reboot MOD device) and re-check the plugin UI after metadata changes.
+6. Run a quick smoke test:
 
 - Onset CV responds to playing rate
 - Trigger CV pulses on detected onsets
-- Clamp modes `-10..0`, `-5..5`, `0..10` behave as expected
+- Invert CV flips output polarity within `0..1` (e.g. `0.2 -> 0.8`)

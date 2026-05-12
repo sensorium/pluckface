@@ -18,6 +18,7 @@ BUILDDIR=build/
 LOADLIBES=-lm
 LV2NAME=pluckometer
 BUNDLE=pluckometer.lv2
+LOCAL_BUNDLE_DIR ?= $(BUNDLE)
 targets=
 SRCS =
 
@@ -169,6 +170,16 @@ install: all
 ifneq ($(MOD),)
 	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui
 	install -t $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui $(BUILDDIR)modgui/*
+endif
+
+sync-local-bundle: all
+	@mkdir -p $(LOCAL_BUNDLE_DIR)
+	cp $(BUILDDIR)manifest.ttl $(LOCAL_BUNDLE_DIR)/manifest.ttl
+	cp $(BUILDDIR)$(LV2NAME).ttl $(LOCAL_BUNDLE_DIR)/$(LV2NAME).ttl
+	if test -f $(BUILDDIR)$(LV2NAME)$(LIB_EXT); then cp $(BUILDDIR)$(LV2NAME)$(LIB_EXT) $(LOCAL_BUNDLE_DIR)/$(LV2NAME)$(LIB_EXT); fi
+ifneq ($(MOD),)
+	rm -rf $(LOCAL_BUNDLE_DIR)/modgui
+	cp -R $(BUILDDIR)modgui $(LOCAL_BUNDLE_DIR)/modgui
 endif
 
 uninstall:
