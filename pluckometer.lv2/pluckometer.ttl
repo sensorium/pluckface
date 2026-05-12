@@ -244,4 +244,12 @@
   lv2:maximum 10.0 ;
   lv2:symbol "cv_trigger_out";
   lv2:name "CV Trigger Output";
+	], [
+  a lv2:OutputPort ,
+  lv2:ControlPort ;
+  lv2:index 13 ;
+  lv2:symbol "input_level_db" ;
+  lv2:name "Input Level (dB)" ;
+  lv2:minimum -90.0 ;
+  lv2:maximum 0.0 ;
 	] .

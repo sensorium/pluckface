@@ -54,7 +54,8 @@ typedef enum
   PLUCKOMETER_INVERT_CV = 9,
   PLUCKOMETER_INPUT = 10,
   PLUCKOMETER_CV_OUT = 11,
-  PLUCKOMETER_CV_TRIGGER_OUT = 12
+  PLUCKOMETER_CV_TRIGGER_OUT = 12,
+  PLUCKOMETER_INPUT_LEVEL_DB = 13
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -103,6 +104,7 @@ typedef struct
   const float *input;
   float *cv_out;
   float *cv_trigger_out;
+  float *input_level_db;
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -115,6 +117,7 @@ typedef struct
   bool cv_params_initialized;
   uint32_t trigger_samples_remaining;
   uint32_t trigger_duration_samples;
+  float input_level_db_lp;
 } Pluckometer;
 
 static LV2_Handle
@@ -186,6 +189,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->cv_params_initialized = false;
   self->trigger_samples_remaining = 0;
   self->trigger_duration_samples = std::max(1u, (uint32_t)floorf(self->samplerate * kCvTriggerDurationSeconds));
+  self->input_level_db_lp = -90.0f;
   return (LV2_Handle)self;
 }
 
@@ -236,6 +240,9 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_CV_TRIGGER_OUT:
     self->cv_trigger_out = (float *)data;
     break;
+  case PLUCKOMETER_INPUT_LEVEL_DB:
+    self->input_level_db = (float *)data;
+    break;
   }
 }
 
@@ -275,6 +282,10 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
       }
     }
+    if (self && self->input_level_db)
+    {
+      *self->input_level_db = -90.0f;
+    }
     return;
   }
 
@@ -307,13 +318,34 @@ run(LV2_Handle instance, uint32_t n_samples)
   }
   const float param_alpha = 1.0f - expf(-1.0f / (kCvParamRampSeconds * self->samplerate));
 
-  // Fill the ring buffer
+  // Fill the ring buffer and estimate input level for metering.
+  double sum_squares = 0.0;
   for (uint32_t i = 0; i < n_samples; i++)
   {
+    const float s = input[i];
+    sum_squares += (double)s * (double)s;
     if (self->ringbuf->Write((unsigned char *)&input[i], sizeof(smpl_t)) < (int)sizeof(smpl_t))
     {
       self->overruns++;
       lv2_log_trace(&self->logger, "overrun on ringbuf: %d\n", self->overruns);
+    }
+  }
+
+  if (n_samples > 0)
+  {
+    const float rms = sqrtf((float)(sum_squares / (double)n_samples));
+    const float min_rms = 0.000001f;
+    const float raw_db = 20.0f * log10f(std::max(min_rms, rms));
+    const float clamped_db = std::max(-90.0f, std::min(0.0f, raw_db));
+    const float block_seconds = n_samples / self->samplerate;
+    const float attack_seconds = 0.03f;
+    const float release_seconds = 0.20f;
+    const float tau = (clamped_db > self->input_level_db_lp) ? attack_seconds : release_seconds;
+    const float coeff = expf(-block_seconds / tau);
+    self->input_level_db_lp = coeff * self->input_level_db_lp + (1.0f - coeff) * clamped_db;
+    if (self->input_level_db)
+    {
+      *self->input_level_db = self->input_level_db_lp;
     }
   }
 
