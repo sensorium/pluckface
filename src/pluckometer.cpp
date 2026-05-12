@@ -354,10 +354,19 @@ run(LV2_Handle instance, uint32_t n_samples)
   lv2_atom_forge_sequence_head(&self->forge, &self->frame, 0);
   const float *input = self->input;
 
-  // Reverse smoothing control so higher settings produce a smoother (slower) CV response.
-  // Keep a small floor so output still converges.
-  const float cv_smoothing = std::max(0.01f, std::min(1.0f, *self->cv_smoothing));
-  const float alpha = std::max(0.01f, 1.01f - cv_smoothing);
+  // Map smoothing control to an exponential time constant so the full range
+  // is useful and perceptually smoother. 0 = effectively bypassed smoothing.
+  const float cv_smoothing = std::max(0.0f, std::min(1.0f, *self->cv_smoothing));
+  float alpha = 1.0f;
+  if (cv_smoothing > 0.0f)
+  {
+    const float min_smoothing_seconds = 0.05f;
+    const float max_smoothing_seconds = 1.0f;
+    const float smoothing_seconds = min_smoothing_seconds *
+                                    powf(max_smoothing_seconds / min_smoothing_seconds, cv_smoothing);
+    alpha = 1.0f - expf(-1.0f / (smoothing_seconds * self->samplerate));
+    alpha = std::max(0.000001f, std::min(1.0f, alpha));
+  }
   const int clamp_mode = std::max(0, std::min(2, (int)floorf(*self->cv_out_clamp + 0.5f)));
   float cv_out_min = -5.0f;
   float cv_out_max = 5.0f;
