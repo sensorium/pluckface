@@ -42,6 +42,7 @@ Use templates as the source of truth for LV2 metadata:
 
 - Edit `lv2ttl/pluckometer.ttl.in` (and `lv2ttl/manifest.modgui.in` when GUI port lists change).
 - Avoid editing generated files directly unless you intentionally want to sync checked-in artifacts.
+- Do not manually edit `build/pluckometer.ttl` or `pluckometer.lv2/pluckometer.ttl`; regenerate them from templates via `make`.
 
 Regenerate metadata and plugin artifacts:
 
