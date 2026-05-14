@@ -56,7 +56,8 @@ typedef enum
   PLUCKOMETER_CV_OUT = 11,
   PLUCKOMETER_CV_TRIGGER_OUT = 12,
   PLUCKOMETER_INPUT_LEVEL_DB = 13,
-  PLUCKOMETER_CV_OUT_METER = 14
+   PLUCKOMETER_CV_OUT_METER = 14,
+   PLUCKOMETER_ONSET_INDICATOR = 15
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -74,7 +75,7 @@ static const float kOnsetSensitivityMin = 0.0f;
 static const float kOnsetSensitivityMax = 1.0f;
 static const float kCvTriggerLow = 0.0f;
 static const float kCvTriggerHigh = 10.0f;
-static const float kCvTriggerDurationSeconds = 0.01f;
+static const float kCvTriggerDurationSeconds = 0.12f;
 static const float kCvParamRampSeconds = 0.01f;
 
 
@@ -107,6 +108,7 @@ typedef struct
   float *cv_trigger_out;
   float *input_level_db;
   float *cv_out_meter;
+  float *onset_indicator;
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -248,6 +250,9 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_CV_OUT_METER:
     self->cv_out_meter = (float *)data;
     break;
+  case PLUCKOMETER_ONSET_INDICATOR:
+    self->onset_indicator = (float *)data;
+    break;
   }
 }
 
@@ -294,6 +299,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self && self->cv_out_meter)
     {
       *self->cv_out_meter = 0.0f;
+    }
+    if (self && self->onset_indicator)
+    {
+      *self->onset_indicator = 0.0f;
     }
     return;
   }
@@ -400,6 +409,11 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->onsets_detected[self->window_index] = current_onset;
     self->window_index = (self->window_index + 1) % window_cells;
 
+    if (current_onset && self->onset_indicator)
+    {
+      *self->onset_indicator = 1.0f;
+    }
+
     self->leaky_onset_level = leak * self->leaky_onset_level + (float)current_onset;
 
     self->previous_total = self->onsets_total;
@@ -428,10 +442,18 @@ run(LV2_Handle instance, uint32_t n_samples)
     {
       self->cv_trigger_out[i] = kCvTriggerHigh;
       self->trigger_samples_remaining--;
+      if (self->onset_indicator)
+      {
+        *self->onset_indicator = 1.0f;
+      }
     }
     else
     {
       self->cv_trigger_out[i] = kCvTriggerLow;
+      if (self->onset_indicator && i > 0)
+      {
+        *self->onset_indicator = 0.0f;
+      }
     }
   }
 }

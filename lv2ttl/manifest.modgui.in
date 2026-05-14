@@ -13,6 +13,8 @@
             lv2:symbol "input_level_db" ;
         ] , [
             lv2:symbol "cv_out_meter" ;
+        ] , [
+            lv2:symbol "onset_indicator" ;
         ] ;
         @MODBRAND@
         @MODLABEL@

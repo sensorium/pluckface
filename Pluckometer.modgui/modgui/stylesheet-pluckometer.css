@@ -139,6 +139,136 @@
   top:120px;
 }
 
+/* = SMILE CURVE
+================================================ */
+.mod-pedal-boxy{{{cns}}} .pluckometer-smile {
+    position:absolute;
+    left:50%;
+    top:100px;
+    transform:translateX(-50%);
+    width:120px;
+    height:60px;
+    z-index:45;
+}
+
+/* = INPUT LEVEL METER
+================================================ */
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter {
+    position:absolute;
+    right:16px;
+    top:176px;
+    width:16px;
+    z-index:45;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-label {
+    color:#111;
+    font-family:"Nexa";
+    font-size:8px;
+    font-weight:bold;
+    letter-spacing:0.8px;
+    line-height:1;
+    margin-bottom:4px;
+    text-align:center;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-bar {
+    background:rgba(0,0,0,0.2);
+    border-radius:3px;
+    box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
+    display:flex;
+    flex-direction:column-reverse;
+    gap:2px;
+    padding:4px 3px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg {
+    background:rgba(255,255,255,0.30);
+    border-radius:2px;
+    height:7px;
+    transition:background-color 60ms linear;
+    width:100%;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.active {
+    background:#86ef4f;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.warn {
+    background:#facc15;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.hot {
+    background:#ef4444;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter {
+    position:absolute;
+    right:38px;
+    top:176px;
+    width:16px;
+    z-index:45;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-label {
+    color:#111;
+    font-family:"Nexa";
+    font-size:8px;
+    font-weight:bold;
+    letter-spacing:0.8px;
+    line-height:1;
+    margin-bottom:4px;
+    text-align:center;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-bar {
+    background:rgba(0,0,0,0.2);
+    border-radius:3px;
+    box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
+    display:flex;
+    flex-direction:column-reverse;
+    gap:2px;
+    padding:4px 3px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg {
+    background:rgba(255,255,255,0.30);
+    border-radius:2px;
+    height:7px;
+    transition:background-color 60ms linear;
+    width:100%;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.active {
+    background:#60a5fa;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.warn {
+    background:#facc15;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.hot {
+    background:#ef4444;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led {
+    position:absolute;
+    left:16px;
+    top:176px;
+    width:16px;
+    height:16px;
+    background:rgba(255,255,255,0.15);
+    border-radius:50%;
+    box-shadow:inset 0 0 3px rgba(0,0,0,0.4);
+    transition:background-color 150ms ease-out;
+    z-index:45;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led.active {
+    background:#22c55e;
+    box-shadow:0 0 6px rgba(34,197,94,0.8), inset 0 0 3px rgba(0,0,0,0.2);
+}
+
 
 /* = FOOTSWITCH
 ================================================ */
@@ -220,7 +350,7 @@
 
 /* ONE KNOB */
 .mod-pedal-boxy{{{cns}}}.mod-one-knob .mod-control-group .mod-knob .mod-knob-image {
-    background-image:url(/resources/knobs/boxy/boxy.png{{{ns}}});
+    background-image:url(/resources/boxy.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 98px;
     height:98px;
@@ -237,7 +367,7 @@
 
 /* TWO KNOBS */
 .mod-pedal-boxy{{{cns}}}.mod-two-knobs .mod-control-group .mod-knob .mod-knob-image {
-    background-image:url(/resources/knobs/boxy/boxy.png{{{ns}}});
+    background-image:url(/resources/boxy.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 90px;
     height:90px;
@@ -262,7 +392,7 @@
 .mod-pedal-boxy{{{cns}}}.mod-six-knobs .mod-control-group .mod-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}}.mod-seven-knobs .mod-control-group .mod-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}}.mod-eight-knobs .mod-control-group .mod-knob .mod-knob-image {
-    background-image:url(/resources/knobs/lata/lata.png{{{ns}}});
+    background-image:url(/resources/lava.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 60px;
     height:60px;
@@ -591,7 +721,7 @@
     background-image:url(/resources/pedals/boxy-small/lava.png{{{ns}}});
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy75.mod-lava {
-    background-image:url(/resources/pedals/boxy75/lava.png{{{ns}}});
+    background-image:url(/resources/lava.png{{{ns}}});
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-lava {
     background-image:url(/resources/pedals/boxy85/lava.png{{{ns}}});

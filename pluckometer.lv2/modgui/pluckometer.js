@@ -1,13 +1,15 @@
 function(event, funcs) {
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
-    if (!inputMeter && !cvMeter) {
+    var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
+    var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
+    if (!inputMeter && !cvMeter && !onsetLed && !smileCurve) {
         return;
     }
 
     var inputSegs = inputMeter ? inputMeter.querySelectorAll('.pluckometer-input-meter-seg') : [];
     var cvSegs = cvMeter ? cvMeter.querySelectorAll('.pluckometer-cv-meter-seg') : [];
-    if ((!inputSegs || !inputSegs.length) && (!cvSegs || !cvSegs.length)) {
+    if ((!inputSegs || !inputSegs.length) && (!cvSegs || !cvSegs.length) && !onsetLed) {
         return;
     }
 
@@ -21,9 +23,27 @@ function(event, funcs) {
         }
     }
 
+    function paintSmile(cv) {
+        if (!smileCurve) {
+            return;
+        }
+
+        // Interpolate from a flat line (cv=0) to a smiling curve (cv=1).
+        var t = cv;
+        if (t < 0.0) t = 0.0;
+        if (t > 1.0) t = 1.0;
+
+        var startY = 25 - (15 * t);
+        var endY = startY;
+        var controlY = 25 + (20 * t);
+        smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + controlY + ' 90 ' + endY);
+    }
+
     if (event.type === 'start') {
         if (inputSegs.length) paint(inputSegs, 0);
         if (cvSegs.length) paint(cvSegs, 0);
+        if (onsetLed) onsetLed.classList.remove('active');
+        paintSmile(0.0);
         return;
     }
 
@@ -56,5 +76,13 @@ function(event, funcs) {
 
         var cvLevel = Math.round(cv * cvSegs.length);
         if (cvSegs.length) paint(cvSegs, cvLevel);
+        paintSmile(cv);
+        return;
+    }
+
+    if (symbol === 'onset_indicator') {
+        if (onsetLed) {
+            onsetLed.classList.toggle('active', numericValue > 0.5);
+        }
     }
 }

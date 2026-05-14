@@ -11,6 +11,9 @@
         </div>
         {{/controls}}
     </div>
+   <svg class="pluckometer-smile" viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+       <path class="pluckometer-smile-curve" d="M 10 10 Q 50 45 90 10" fill="none" stroke="#86ef4f" stroke-width="4" stroke-linecap="round"/>
+   </svg>
    <div class="pluckometer-input-meter" title="Input Level (dB)">
         <div class="pluckometer-input-meter-label">IN</div>
         <div class="pluckometer-input-meter-bar">
@@ -41,6 +44,7 @@
             <span class="pluckometer-cv-meter-seg"></span>
         </div>
    </div>
+   <div class="pluckometer-onset-led" title="Onset Detected"></div>
    <div class="mod-footswitch" mod-role="bypass"></div>
    <div class="mod-pedal-input">
         {{#effect.ports.audio.input}}
