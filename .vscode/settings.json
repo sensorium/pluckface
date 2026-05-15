@@ -9,6 +9,7 @@
         },
         "diff": true,
         "true": true,
-        "printf": true
+        "printf": true,
+        "cp": true
     }
 }

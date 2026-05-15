@@ -144,11 +144,12 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-smile {
     position:absolute;
     left:50%;
-    top:100px;
+    top:208px;
     transform:translateX(-50%);
     width:120px;
     height:60px;
-    z-index:45;
+    pointer-events:none;
+    z-index:60;
 }
 
 /* = INPUT LEVEL METER
