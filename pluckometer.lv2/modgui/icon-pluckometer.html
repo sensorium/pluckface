@@ -11,6 +11,22 @@
         </div>
         {{/controls}}
     </div>
+    <div class="pluckometer-onset-method-group mod-control-group mod-enumerated-group clearfix" title="Onset Method">
+        <div class="mod-enumerated" mod-role="input-control-port" mod-port-symbol="onset_method" mod-widget="custom-select">
+            <div mod-role="input-control-value" mod-port-symbol="onset_method" class="mod-enumerated-selected"></div>
+            <div class="mod-enumerated-list" mod-widget-property="hidden">
+                <div mod-role="enumeration-option" mod-port-value="0">default (hfc)</div>
+                <div mod-role="enumeration-option" mod-port-value="1">energy</div>
+                <div mod-role="enumeration-option" mod-port-value="2">hfc</div>
+                <div mod-role="enumeration-option" mod-port-value="3">complex</div>
+                <div mod-role="enumeration-option" mod-port-value="4">phase</div>
+                <div mod-role="enumeration-option" mod-port-value="5">specdiff</div>
+                <div mod-role="enumeration-option" mod-port-value="6">kl</div>
+                <div mod-role="enumeration-option" mod-port-value="7">mkl</div>
+                <div mod-role="enumeration-option" mod-port-value="8">specflux</div>
+            </div>
+        </div>
+    </div>
     <div class="pluckometer-silence-slider mod-slider" mod-role="icon-button" mod-button-type="slider" title="Silence Threshold">
         <div class="mod-slider-image" mod-role="input-control-port" mod-port-symbol="silence_threshold"></div>
     </div>

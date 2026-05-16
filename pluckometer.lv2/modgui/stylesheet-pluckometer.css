@@ -261,7 +261,7 @@
     background-image:url(/resources/pedals/bezel.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:contain;
-    opacity:0.45;
+    opacity:0.15;
     transition:opacity 150ms ease-out;
     z-index:45;
 }
@@ -665,6 +665,35 @@
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter {
     right:155px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group {
+    display:block;
+    height:31px;
+    left:29px;
+    margin:0 !important;
+    position:absolute;
+    top:77px;
+    width:128px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated {
+    color:#d7f7f6;
+    font-size:11px;
+    line-height:1.8;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-selected {
+    background:rgba(10, 18, 16, 0.88);
+    border-radius:6px;
+    box-shadow:none;
+    outline:none;
+    padding:3px 9px;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider {

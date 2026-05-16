@@ -40,7 +40,7 @@ function(event, funcs) {
     }
 
     if (event.type === 'start') {
-        var hiddenSliderSymbols = ['onset_sensitivity', 'window_seconds', 'leaky_mix', 'leaky_decay_seconds', 'cv_smoothing', 'offset_cv_out', 'scale_cv_out'];
+        var hiddenSliderSymbols = ['onset_method', 'onset_sensitivity', 'window_seconds', 'leaky_mix', 'leaky_decay_seconds', 'cv_smoothing', 'offset_cv_out', 'scale_cv_out'];
         for (var s = 0; s < hiddenSliderSymbols.length; s++) {
             var hiddenSlider = event.icon.find('.mod-slider-image[mod-port-symbol="' + hiddenSliderSymbols[s] + '"]').closest('.mod-slider');
             if (hiddenSlider && hiddenSlider.length) {
