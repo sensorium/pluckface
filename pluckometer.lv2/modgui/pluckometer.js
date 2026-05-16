@@ -10,6 +10,9 @@ function(event, funcs) {
 
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
+    var cvPendingValue = null;
+    var cvLastPaintMs = 0;
+    var cvMeterTimer = null;
     var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
     var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
     var silenceThresholdDb = (inputMeter && typeof inputMeter._silenceThresholdDb === 'number')
@@ -20,8 +23,8 @@ function(event, funcs) {
     }
 
     var inputSegs = inputMeter ? inputMeter.querySelectorAll('.pluckometer-input-meter-seg') : [];
-    var cvSegs = cvMeter ? cvMeter.querySelectorAll('.pluckometer-cv-meter-seg') : [];
-    if ((!inputSegs || !inputSegs.length) && (!cvSegs || !cvSegs.length) && !onsetLed) {
+    var cvMask = cvMeter ? cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
+    if ((!inputSegs || !inputSegs.length) && !cvMask && !onsetLed) {
         return;
     }
 
@@ -140,6 +143,31 @@ function(event, funcs) {
         smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + controlY + ' 90 ' + endY);
     }
 
+    function flushCvPaint() {
+        if (!cvMask) return;
+        var cv = (typeof cvPendingValue === 'number') ? cvPendingValue : 0.0;
+        if (cv < 0.0) cv = 0.0;
+        if (cv > 1.0) cv = 1.0;
+        cvMask.style.height = ((1 - cv) * 100) + '%';
+        paintSmile(cv);
+        cvLastPaintMs = Date.now();
+        cvMeterTimer = null;
+    }
+
+    function queueCvPaint(cv) {
+        if (!cvMask) return;
+        cvPendingValue = cv;
+        var now = Date.now();
+        var elapsed = now - cvLastPaintMs;
+        if (elapsed >= INPUT_METER_INTERVAL_MS) {
+            flushCvPaint();
+            return;
+        }
+        if (!cvMeterTimer) {
+            cvMeterTimer = setTimeout(flushCvPaint, INPUT_METER_INTERVAL_MS - elapsed);
+        }
+    }
+
     if (event.type === 'start') {
         var hiddenSliderSymbols = ['onset_method', 'onset_sensitivity', 'window_seconds', 'leaky_mix', 'leaky_decay_seconds', 'cv_smoothing', 'offset_cv_out', 'scale_cv_out'];
         for (var s = 0; s < hiddenSliderSymbols.length; s++) {
@@ -165,7 +193,15 @@ function(event, funcs) {
             applyInputPalette();
             paintInputLevel(-90.0);
         }
-        if (cvSegs.length) paint(cvSegs, 0);
+        if (cvMask) {
+            cvMask.style.height = '100%';
+            cvPendingValue = 0.0;
+            cvLastPaintMs = Date.now();
+            if (cvMeterTimer) {
+                clearTimeout(cvMeterTimer);
+                cvMeterTimer = null;
+            }
+        }
         if (onsetLed) onsetLed.classList.remove('active');
         paintInputThreshold();
         paintSmile(0.0);
@@ -195,13 +231,7 @@ function(event, funcs) {
     }
 
     if (symbol === 'cv_out_meter') {
-        var cv = numericValue;
-        if (cv < 0.0) cv = 0.0;
-        if (cv > 1.0) cv = 1.0;
-
-        var cvLevel = Math.round(cv * cvSegs.length);
-        if (cvSegs.length) paint(cvSegs, cvLevel);
-        paintSmile(cv);
+        queueCvPaint(numericValue);
         return;
     }
 

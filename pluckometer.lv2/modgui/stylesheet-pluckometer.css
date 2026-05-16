@@ -223,30 +223,19 @@
     background:rgba(0,0,0,0.2);
     border-radius:3px;
     box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
-    display:flex;
-    flex-direction:column-reverse;
-    gap:2px;
+    overflow:hidden;
     padding:4px 3px;
+    position:relative;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg {
-    background:rgba(255,255,255,0.30);
-    border-radius:2px;
-    height:7px;
-    transition:background-color 60ms linear;
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-mask {
+    background:rgba(0,0,0,0.85);
+    height:100%;
+    left:0;
+    position:absolute;
+    top:0;
+    transition:height 60ms linear;
     width:100%;
-}
-
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.active {
-    background:#60a5fa;
-}
-
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.warn {
-    background:#facc15;
-}
-
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.hot {
-    background:#ef4444;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-onset-led {
@@ -691,7 +680,24 @@
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter {
-    right:155px;
+    left:465px;
+    right:auto;
+    top:55px;
+    width:22px;
+    height:221px;
+    z-index:65;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter-label {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter-bar {
+    background:none;
+    border-radius:0;
+    box-shadow:none;
+    height:100%;
+    padding:0;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group {
