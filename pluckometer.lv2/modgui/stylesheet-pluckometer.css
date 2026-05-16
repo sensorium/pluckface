@@ -256,39 +256,40 @@
     position:absolute;
     left:16px;
     top:176px;
-    width:16px;
-    height:16px;
-    background:rgba(255,255,255,0.15);
-    border-radius:50%;
-    box-shadow:inset 0 0 3px rgba(0,0,0,0.4);
-    transition:background-color 150ms ease-out;
+    width:33px;
+    height:34px;
+    background-image:url(/resources/pedals/bezel.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:contain;
+    opacity:0.45;
+    transition:opacity 150ms ease-out;
     z-index:45;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-onset-led.active {
-    background:#22c55e;
-    box-shadow:0 0 6px rgba(34,197,94,0.8), inset 0 0 3px rgba(0,0,0,0.2);
+    opacity:1;
 }
 
 
 /* = FOOTSWITCH
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .mod-footswitch {
-    background-image:url(/resources/pedals/footswitch.png{{{ns}}});
-    background-position:bottom center;
+    background-image:url(/resources/pedals/power-switch-88x119.png{{{ns}}});
+    background-position:top center;
     background-repeat:no-repeat;
-    background-size:auto 132px;
-    bottom: 95px;
-    left: 13px;
-    right: 13px;
+    background-size:auto 118px;
+    left:17px;
+    top:189px;
+    right:auto;
+    bottom:auto;
     cursor:pointer;
-    height:66px;
-    width: 66px;
-    margin: auto;
+    height:59px;
+    width:43px;
+    margin:0;
     position:absolute !important;
 }
 .mod-pedal-boxy{{{cns}}} .mod-footswitch.on {
-    background-position-y: top !important
+    background-position-y: bottom !important
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-five-knobs .mod-footswitch,
@@ -635,7 +636,226 @@
     background-image:url(/resources/pedals/boxy75/pink.png{{{ns}}});
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
-    background-image:url(/resources/pedals/boxy85/pink.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base3.png{{{ns}}});
+    background-size:598px 431px;
+    width:598px;
+}
+
+/* Pluckometer custom base keeps native aspect ratio (1216x876) while
+ * preserving the original control field alignment from the old 364x431 skin. */
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-plugin-name {
+    left:147px;
+    right:147px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-light {
+    left:127px;
+    right:127px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group {
+    width:330px;
+    margin-left:auto !important;
+    margin-right:auto !important;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-input-meter {
+    right:133px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter {
+    right:155px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider {
+    float:none;
+    height:140px;
+    left:111px;
+    margin:0;
+    overflow:visible;
+    position:absolute;
+    top:156px;
+    width:32px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider .mod-slider-image {
+    background-image:url(/resources/pedals/slider_sprite_2048x140.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:2048px 140px;
+    height:140px;
+    margin:0;
+    width:32px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-led {
+    left:138px;
+    top:327px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-window-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-mix-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-decay-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-cv-smoothing-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob {
+    display:none;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-knob {
+    display:block;
+    left:65px;
+    position:absolute;
+    top:341px;
+    transform:translate(-50%, -50%);
+    width:41px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 41px;
+    height:41px;
+    width:41px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-window-knob {
+    display:block;
+    left:248px;
+    position:absolute;
+    top:341px;
+    transform:translate(-50%, -50%);
+    width:41px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-window-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 41px;
+    height:41px;
+    width:41px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-mix-knob {
+    display:block;
+    left:337px;
+    position:absolute;
+    top:341px;
+    transform:translate(-50%, -50%);
+    width:41px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-mix-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 41px;
+    height:41px;
+    width:41px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-decay-knob {
+    display:block;
+    left:425px;
+    position:absolute;
+    top:341px;
+    transform:translate(-50%, -50%);
+    width:41px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-decay-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 41px;
+    height:41px;
+    width:41px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-smoothing-knob {
+    display:block;
+    left:516px;
+    position:absolute;
+    top:341px;
+    transform:translate(-50%, -50%);
+    width:41px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-smoothing-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 41px;
+    height:41px;
+    width:41px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob {
+    display:block;
+    left:537px;
+    position:absolute;
+    top:235px;
+    transform:translate(-50%, -50%);
+    width:50px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 50px;
+    height:50px;
+    width:50px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob {
+    display:block;
+    left:537px;
+    position:absolute;
+    top:110px;
+    transform:translate(-50%, -50%);
+    width:50px;
+    z-index:56;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 50px;
+    height:50px;
+    width:50px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider.pluckometer-hidden-control,
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(2),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(4),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(7),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(8),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(9),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(5),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(6) {
+    display:none;
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy100.mod-pink {
     background-image:url(/resources/pedals/boxy100/pink.png{{{ns}}});

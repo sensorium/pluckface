@@ -10,6 +10,7 @@
         "diff": true,
         "true": true,
         "printf": true,
-        "cp": true
+        "cp": true,
+        "sips": true
     }
 }
