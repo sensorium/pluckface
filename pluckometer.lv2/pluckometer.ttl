@@ -140,7 +140,7 @@
   lv2:symbol "offset_cv_out" ;
   lv2:name "Offset CV Out";
   lv2:default 0.0 ;
-  lv2:minimum -1.0 ;
+  lv2:minimum -2.0 ;
   lv2:maximum 1.0 ;
   lv2:scalePoint [
   rdfs:label "-1" ;

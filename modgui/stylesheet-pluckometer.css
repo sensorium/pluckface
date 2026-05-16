@@ -47,40 +47,6 @@
 
 /* = PLUGIN'S AUTHOR
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .mod-plugin-brand {
-    left:0;
-    position:absolute;
-    right:0;
-    text-align:center;
-    text-transform:uppercase;
-    top:160px;
-}
-
-.mod-pedal-boxy{{{cns}}} .mod-plugin-brand h1 {
-    border-color:#000;
-    border-radius:12px;
-    border-style:solid;
-    border-width:4px;
-    display:inline-block;
-    font-family:"Nexa";
-    font-size:32px;
-    padding:3px 9px 0;
-}
-
-.mod-pedal-boxy{{{cns}}}.mod-five-knobs .mod-plugin-brand,
-.mod-pedal-boxy{{{cns}}}.mod-six-knobs .mod-plugin-brand,
-.mod-pedal-boxy{{{cns}}}.mod-seven-knobs .mod-plugin-brand,
-.mod-pedal-boxy{{{cns}}}.mod-eight-knobs .mod-plugin-brand {
-    top:190px;
-}
-
-.mod-pedal-boxy{{{cns}}}.mod-boxy50 .mod-plugin-brand {
-  top:16px;
-}
-
-.mod-pedal-boxy{{{cns}}}.mod-one-footswitch-presets .mod-plugin-brand {
-  top:12px;
-}
 
 
 /* = PLUGIN'S NAME
