@@ -683,17 +683,30 @@
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated {
-    color:#d7f7f6;
+    color:#4da2a1;
+    font-family:"Courier New", "Liberation Mono", monospace;
     font-size:11px;
+    font-weight:normal;
+    letter-spacing:0.6px;
     line-height:1.8;
+    text-transform:uppercase;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-selected {
     background:rgba(10, 18, 16, 0.88);
     border-radius:6px;
     box-shadow:none;
+    color:#449291;
     outline:none;
     padding:3px 9px;
+}
+
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-list {
+    color:#449291;
+    font-family:"Courier New", "Liberation Mono", monospace;
+    font-weight:normal;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider {
