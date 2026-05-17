@@ -22,61 +22,23 @@ function(event, funcs) {
         return;
     }
 
-    var inputSegs = inputMeter ? inputMeter.querySelectorAll('.pluckometer-input-meter-seg') : [];
+    var inputMask = inputMeter ? inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
     var cvMask = cvMeter ? cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
-    if ((!inputSegs || !inputSegs.length) && !cvMask && !onsetLed) {
+    if (!inputMask && !cvMask && !onsetLed) {
         return;
     }
 
-    function applyInputPalette() {
-        for (var i = 0; i < inputSegs.length; i++) {
-            var seg = inputSegs[i];
-            var t = (inputSegs.length > 1) ? (i / (inputSegs.length - 1)) : 0.0;
-            var paletteIndex = Math.round(t * (INPUT_SEGMENT_COLORS.length - 1));
-            seg.style.setProperty('--input-seg-color', INPUT_SEGMENT_COLORS[paletteIndex]);
-        }
-    }
-
-    function paint(segs, level) {
-        var warnStart = Math.floor(segs.length * 0.7);
-        var hotStart = Math.floor(segs.length * 0.9);
-        for (var i = 0; i < segs.length; i++) {
-            var seg = segs[i];
-            var active = i < level;
-            seg.classList.toggle('active', active);
-            seg.classList.toggle('warn', active && i >= warnStart && i < hotStart);
-            seg.classList.toggle('hot', active && i >= hotStart);
-        }
-    }
-
-    function paintInputLevel(db) {
-        if (!inputSegs || !inputSegs.length) {
+    function flushInputPaint() {
+        if (!inputMeter || !inputMask) {
             return;
         }
-
+        var db = (typeof inputMeter._pendingInputDb === 'number') ? inputMeter._pendingInputDb : -90.0;
         if (db < -90.0) db = -90.0;
         if (db > 0.0) db = 0.0;
-
         var norm = (db + 90.0) / 90.0;
         if (norm < 0.0) norm = 0.0;
         if (norm > 1.0) norm = 1.0;
-
-        var inputLevel = Math.round(norm * inputSegs.length);
-        for (var i = 0; i < inputSegs.length; i++) {
-            var seg = inputSegs[i];
-            seg.classList.toggle('active', i < inputLevel);
-            seg.classList.remove('warn');
-            seg.classList.remove('hot');
-        }
-    }
-
-    function flushInputPaint() {
-        if (!inputMeter || !inputSegs || !inputSegs.length) {
-            return;
-        }
-
-        var db = (typeof inputMeter._pendingInputDb === 'number') ? inputMeter._pendingInputDb : -90.0;
-        paintInputLevel(db);
+        inputMask.style.height = ((1 - norm) * 100) + '%';
         paintInputThreshold();
         inputMeter._lastInputPaintMs = Date.now();
         inputMeter._inputMeterTimer = null;
@@ -86,45 +48,22 @@ function(event, funcs) {
         if (!inputMeter) {
             return;
         }
-
         inputMeter._pendingInputDb = db;
         var now = Date.now();
         var last = inputMeter._lastInputPaintMs || 0;
         var elapsed = now - last;
-
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
             flushInputPaint();
             return;
         }
-
         if (!inputMeter._inputMeterTimer) {
             inputMeter._inputMeterTimer = setTimeout(flushInputPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
     }
 
     function paintInputThreshold() {
-        if (!inputSegs || !inputSegs.length) {
-            return;
-        }
-
-        var t = (inputMeter && typeof inputMeter._silenceThresholdDb === 'number')
-            ? inputMeter._silenceThresholdDb
-            : silenceThresholdDb;
-        if (t < -90.0) t = -90.0;
-        if (t > -10.0) t = -10.0;
-        if (inputMeter) {
-            inputMeter._silenceThresholdDb = t;
-        }
-
-        // Map the slider's own range (-90..-10 dB) to full meter height.
-        var norm = (t + 90.0) / 80.0;
-        if (norm < 0.0) norm = 0.0;
-        if (norm > 1.0) norm = 1.0;
-
-        var marker = Math.round(norm * (inputSegs.length - 1));
-        for (var i = 0; i < inputSegs.length; i++) {
-            inputSegs[i].classList.toggle('threshold', i === marker);
-        }
+        // Optionally, implement a threshold marker overlay for the mask version if needed.
+        // For now, this is a no-op or could set a CSS variable for a marker.
     }
 
     function paintSmile(cv) {
@@ -189,9 +128,8 @@ function(event, funcs) {
             inputMeter._inputMeterTimer = null;
         }
 
-        if (inputSegs.length) {
-            applyInputPalette();
-            paintInputLevel(-90.0);
+        if (inputMask) {
+            inputMask.style.height = '100%';
         }
         if (cvMask) {
             cvMask.style.height = '100%';
