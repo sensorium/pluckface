@@ -581,7 +581,7 @@
     background-image:url(/resources/pedals/boxy75/pink.png{{{ns}}});
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
-    background-image:url(/resources/pedals/pluck-base4.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base5.png{{{ns}}});
     background-size:598px 431px;
     width:598px;
 }
@@ -849,38 +849,38 @@
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob {
     display:block;
-    left:537px;
+    left:539px;
     position:absolute;
-    top:235px;
+    top:254px;
     transform:translate(-50%, -50%);
-    width:40px;
+    width:32px;
     z-index:56;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
-    background-size:auto 40px;
-    height:40px;
-    width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob {
     display:block;
-    left:537px;
+    left:539px;
     position:absolute;
-    top:110px;
+    top:92px;
     transform:translate(-50%, -50%);
-    width:40px;
+    width:32px;
     z-index:56;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
-    background-size:auto 40px;
-    height:40px;
-    width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider.pluckometer-hidden-control,
@@ -890,7 +890,8 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(8),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(9),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(5),
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(6) {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(6),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider[data-port-symbol="invert_cv"] {
     display:none;
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy100.mod-pink {

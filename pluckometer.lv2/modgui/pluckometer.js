@@ -1,12 +1,6 @@
 function(event, funcs) {
     var INPUT_METER_HZ = 10;
     var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
-    var INPUT_SEGMENT_COLORS = [
-        '#0b5d57', '#0f6a5f', '#147767', '#19856f',
-        '#1f9277', '#27a07f', '#35ad8a', '#4cb992',
-        '#68c29b', '#87c9a0', '#a8cda2', '#c7ce9f',
-        '#d2c08a', '#bf9aa1', '#a56cb0', '#82085b'
-    ];
 
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
