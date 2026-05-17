@@ -1,3 +1,22 @@
+/* Pluckometer invert_cv switch (custom position and sprite) */
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
+    display: block;
+    position: absolute;
+    left: 539px;
+    top: 216px;
+    width: 44px;
+    height: 59px;
+    background-image: url(/resources/pedals/power-switch-88x119.png{{{ns}}});
+    background-repeat: no-repeat;
+    background-size: 44px 59px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 120;
+}
+/* Optional: style for the ON state, if needed */
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch.on {
+    background-position-y: bottom;
+}
 /* STYLES FOR THE BOXY PEDAL */
 
 @import url(/fonts/nexa/stylesheet.css);
@@ -869,7 +888,7 @@
     display:block;
     left:539px;
     position:absolute;
-    top:93px;
+    top:92px;
     transform:translate(-50%, -50%);
     width:32px;
     z-index:56;
@@ -890,7 +909,8 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(8),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(9),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(5),
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(6) {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(6),
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider[data-port-symbol="invert_cv"] {
     display:none;
 }
 .mod-pedal-boxy{{{cns}}}.mod-boxy100.mod-pink {
