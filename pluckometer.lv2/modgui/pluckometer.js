@@ -9,9 +9,6 @@ function(event, funcs) {
     var cvMeterTimer = null;
     var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
     var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
-    var silenceThresholdDb = (inputMeter && typeof inputMeter._silenceThresholdDb === 'number')
-        ? inputMeter._silenceThresholdDb
-        : -90.0;
     if (!inputMeter && !cvMeter && !onsetLed && !smileCurve) {
         return;
     }
@@ -33,7 +30,6 @@ function(event, funcs) {
         if (norm < 0.0) norm = 0.0;
         if (norm > 1.0) norm = 1.0;
         inputMask.style.height = ((1 - norm) * 100) + '%';
-        paintInputThreshold();
         inputMeter._lastInputPaintMs = Date.now();
         inputMeter._inputMeterTimer = null;
     }
@@ -53,11 +49,6 @@ function(event, funcs) {
         if (!inputMeter._inputMeterTimer) {
             inputMeter._inputMeterTimer = setTimeout(flushInputPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
-    }
-
-    function paintInputThreshold() {
-        // Optionally, implement a threshold marker overlay for the mask version if needed.
-        // For now, this is a no-op or could set a CSS variable for a marker.
     }
 
     function paintSmile(cv) {
@@ -135,7 +126,6 @@ function(event, funcs) {
             }
         }
         if (onsetLed) onsetLed.classList.remove('active');
-        paintInputThreshold();
         paintSmile(0.0);
         return;
     }
@@ -150,15 +140,6 @@ function(event, funcs) {
     if (symbol === 'input_level_db') {
         var db = numericValue;
         queueInputPaint(db);
-        return;
-    }
-
-    if (symbol === 'silence_threshold') {
-        silenceThresholdDb = numericValue;
-        if (inputMeter) {
-            inputMeter._silenceThresholdDb = silenceThresholdDb;
-        }
-        paintInputThreshold();
         return;
     }
 
