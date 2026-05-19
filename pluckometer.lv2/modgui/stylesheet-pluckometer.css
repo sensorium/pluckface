@@ -317,7 +317,7 @@
 
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
-    background-image:url(/resources/pedals/pluck-base5.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base6.png{{{ns}}});
     background-size:598px 431px;
     width:598px;
 }
@@ -584,20 +584,18 @@
 ================================================ */
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
     /* display:block; */
-    background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}});
+    /* background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}}); */
+    background-image:url(/resources/pedals/switch-grime-shadow-124x80.png{{{ns}}});
     position:absolute;
-    left:539px;
-    top:170px;
-    width:80px;
-    height:80px;
+    left:540px;
+    top:172px;
+    width:41.3px;
+    height:52.8px;
     background-repeat:no-repeat;
-    background-size:auto 80px;
-    background-position:center centre;
+    background-size:auto 52.8px;
+    background-position:top centre;
     transform:translate(-50%, -50%);
     cursor:pointer;
     z-index:120;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch.on {
-    background-position:-80px 0px;
-}
