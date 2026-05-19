@@ -64,6 +64,11 @@
     z-index:60;
 }
 
+.mod-pedal-boxy{{{cns}}} .pluckometer-smile-curve {
+    stroke: #00ff00; /* Classic green-scale color */
+    filter: drop-shadow(0px 0px 3px #00ff00); /* Green glow effect */
+}
+
 
 /* = INPUT LEVEL METER
 ================================================ */
@@ -316,8 +321,10 @@
 }
 
 /* imagees reduced by 0.491776315789474 */
+
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
     background-image:url(/resources/pedals/pluck-base7.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base6.png{{{ns}}});
     background-size:598px 431px;
     width:598px;
 }
@@ -546,10 +553,13 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob {
     display:block;
     left:537px;
+    left:539px;
     position:absolute;
     top:236px;
+    top:254px;
     transform:translate(-50%, -50%);
     width:40px;
+    width:32px;
     z-index:56;
 }
 
@@ -559,15 +569,21 @@
     background-size:auto 40px;
     height:40px;
     width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob {
     display:block;
     left:537px;
+    left:539px;
     position:absolute;
     top:110px;
+    top:92px;
     transform:translate(-50%, -50%);
     width:40px;
+    width:32px;
     z-index:56;
 }
 
@@ -577,5 +593,27 @@
     background-size:auto 40px;
     height:40px;
     width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
+
+/* = INVERT CV SWITCH
+================================================ */
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
+    /* display:block; */
+    /* background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}}); */
+    background-image:url(/resources/pedals/switch-grime-shadow-124x80.png{{{ns}}});
+    position:absolute;
+    left:540px;
+    top:172px;
+    width:41.3px;
+    height:52.8px;
+    background-repeat:no-repeat;
+    background-size:auto 52.8px;
+    background-position:top centre;
+    transform:translate(-50%, -50%);
+    cursor:pointer;
+    z-index:120;
+}
