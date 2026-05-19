@@ -429,18 +429,21 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
     self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
 
-    float cv_value;
-    if (invert)
-      cv_value = 1.0f - (self->metric_lp * self->ramped_scale) + self->ramped_offset;
-    else
-      cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
-
+    // Calculate the "Normal" CV value based on metric, scale and offset
+    float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
-    self->cv_out[i] = cv_value;
+
+    // The GUI meter always shows the un-inverted state for consistent calibration
     if (self->cv_out_meter)
     {
       *self->cv_out_meter = cv_value;
     }
+
+    // Apply inversion only to the final signal being sent to the output port
+    if (invert)
+      self->cv_out[i] = 1.0f - cv_value;
+    else
+      self->cv_out[i] = cv_value;
 
     if (self->trigger_samples_remaining > 0)
     {
