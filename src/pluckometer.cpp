@@ -429,9 +429,13 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
     self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
 
-    float cv_value = self->metric_lp * self->ramped_scale + self->ramped_offset;
+    float cv_value;
+    if (invert)
+      cv_value = 1.0f - (self->metric_lp * self->ramped_scale) + self->ramped_offset;
+    else
+      cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
+
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
-    if (invert) cv_value = 1.0f - cv_value;
     self->cv_out[i] = cv_value;
     if (self->cv_out_meter)
     {
