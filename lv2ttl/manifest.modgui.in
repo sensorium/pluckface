@@ -15,6 +15,8 @@
             lv2:symbol "cv_out_meter" ;
         ] , [
             lv2:symbol "onset_indicator" ;
+        ] , [
+            lv2:symbol "leaky_onset_meter" ; // Add the new meter port
         ] ;
         @MODBRAND@
         @MODLABEL@

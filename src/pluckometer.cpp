@@ -57,7 +57,8 @@ typedef enum
   PLUCKOMETER_INPUT = 12,
   PLUCKOMETER_INPUT_LEVEL_DB = 13,
    PLUCKOMETER_CV_OUT_METER = 14,
-   PLUCKOMETER_ONSET_INDICATOR = 15
+   PLUCKOMETER_ONSET_INDICATOR = 15,
+   PLUCKOMETER_LEAKY_ONSET_METER = 16 // New port for leaky integrator level
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -109,6 +110,7 @@ typedef struct
   float *input_level_db;
   float *cv_out_meter;
   float *onset_indicator;
+  float *leaky_onset_meter; // New member for the leaky onset meter
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -253,6 +255,9 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_ONSET_INDICATOR:
     self->onset_indicator = (float *)data;
     break;
+  case PLUCKOMETER_LEAKY_ONSET_METER: // Connect the new port
+    self->leaky_onset_meter = (float *)data;
+    break;
   }
 }
 
@@ -279,7 +284,8 @@ run(LV2_Handle instance, uint32_t n_samples)
       !self->cv_inverted_out ||
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
-      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing)
+      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
+      !self->leaky_onset_meter) // Add new meter to the guard check
   {
     if (self && self->cv_out)
     {
@@ -304,6 +310,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self && self->onset_indicator)
     {
       *self->onset_indicator = 0.0f;
+    }
+    if (self && self->leaky_onset_meter) // Initialize new meter
+    {
+      *self->leaky_onset_meter = 0.0f;
     }
     return;
   }
@@ -420,6 +430,12 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
     self->target_metric = onset_metric;
+  }
+
+  if (self->leaky_onset_meter)
+  {
+    // Output the raw leaky_onset_level, capped at 10.0 for reasonable metering range.
+    *self->leaky_onset_meter = std::min(10.0f, self->leaky_onset_level);
   }
 
   // Fill CV output for ALL samples in this block

@@ -64,6 +64,32 @@
     z-index:60;
 }
 
+.mod-pedal-boxy{{{cns}}} .pluckometer-face {
+    position:absolute;
+    left:50%;
+    top:180px; /* Adjust position to fit the face */
+    transform:translateX(-50%);
+    width:120px;
+    height:120px; /* Make it taller to accommodate eyes and smile */
+    pointer-events:none;
+    z-index:60;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-smile-curve {
+    stroke: #00ff00; /* Classic green-scale color */
+    filter: drop-shadow(0px 0px 3px #00ff00); /* Green glow effect */
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-eye {
+    stroke: #00ff00;
+    stroke-width: 2;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-pupil {
+    fill: #00ff00;
+    filter: drop-shadow(0px 0px 1px #00ff00); /* Subtle glow for pupils */
+}
+
 
 /* = INPUT LEVEL METER
 ================================================ */
@@ -316,8 +342,10 @@
 }
 
 /* imagees reduced by 0.491776315789474 */
+
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
     background-image:url(/resources/pedals/pluck-base7.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base6.png{{{ns}}});
     background-size:598px 431px;
     width:598px;
 }
@@ -546,10 +574,13 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob {
     display:block;
     left:537px;
+    left:539px;
     position:absolute;
     top:236px;
+    top:254px;
     transform:translate(-50%, -50%);
     width:40px;
+    width:32px;
     z-index:56;
 }
 
@@ -559,15 +590,21 @@
     background-size:auto 40px;
     height:40px;
     width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob {
     display:block;
     left:537px;
+    left:539px;
     position:absolute;
     top:110px;
+    top:92px;
     transform:translate(-50%, -50%);
     width:40px;
+    width:32px;
     z-index:56;
 }
 
@@ -577,5 +614,27 @@
     background-size:auto 40px;
     height:40px;
     width:40px;
+    background-size:auto 32px;
+    height:32px;
+    width:32px;
 }
 
+
+/* = INVERT CV SWITCH
+================================================ */
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
+    /* display:block; */
+    /* background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}}); */
+    background-image:url(/resources/pedals/switch-grime-shadow-124x80.png{{{ns}}});
+    position:absolute;
+    left:540px;
+    top:172px;
+    width:41.3px;
+    height:52.8px;
+    background-repeat:no-repeat;
+    background-size:auto 52.8px;
+    background-position:top centre;
+    transform:translate(-50%, -50%);
+    cursor:pointer;
+    z-index:120;
+}

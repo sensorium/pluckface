@@ -64,9 +64,30 @@
     z-index:60;
 }
 
+.mod-pedal-boxy{{{cns}}} .pluckometer-face {
+    position:absolute;
+    left:50%;
+    top:180px; /* Adjust position to fit the face */
+    transform:translateX(-50%);
+    width:120px;
+    height:120px; /* Make it taller to accommodate eyes and smile */
+    pointer-events:none;
+    z-index:60;
+}
+
 .mod-pedal-boxy{{{cns}}} .pluckometer-smile-curve {
     stroke: #00ff00; /* Classic green-scale color */
     filter: drop-shadow(0px 0px 3px #00ff00); /* Green glow effect */
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-eye {
+    stroke: #00ff00;
+    stroke-width: 2;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-pupil {
+    fill: #00ff00;
+    filter: drop-shadow(0px 0px 1px #00ff00); /* Subtle glow for pupils */
 }
 
 

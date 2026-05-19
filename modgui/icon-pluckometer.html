@@ -3,6 +3,7 @@
     <!-- brand label removed -->
     <!-- <div class="mod-plugin-name"><h1>{{label}}</h1></div> -->
     <div class="mod-light on" mod-role="bypass-light"></div>
+    <div class="pluckometer-invert-cv-switch" mod-role="input-control-port" mod-port-symbol="invert_cv" title="Invert CV"></div>
     <div class="pluckometer-onset-method-group mod-control-group mod-enumerated-group clearfix" title="Onset Method">
         <div class="mod-enumerated" mod-role="input-control-port" mod-port-symbol="onset_method" mod-widget="custom-select">
             <div mod-role="input-control-value" mod-port-symbol="onset_method" class="mod-enumerated-selected"></div>
@@ -43,8 +44,16 @@
     <div class="pluckometer-scale-cv-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Scale CV Out">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="scale_cv_out"></div>
     </div>
-   <svg class="pluckometer-smile" viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
-       <path class="pluckometer-smile-curve" d="M 10 10 Q 50 45 90 10" fill="none" stroke="#86ef4f" stroke-width="4" stroke-linecap="round"/>
+   <svg class="pluckometer-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+       <!-- Eyes -->
+       <circle cx="35" cy="35" r="8" fill="none" class="pluckometer-eye"/>
+       <circle cx="65" cy="35" r="8" fill="none" class="pluckometer-eye"/>
+       <!-- Pupils -->
+       <circle id="pluckometer-pupil-left" cx="35" cy="35" r="3" class="pluckometer-pupil"/>
+       <circle id="pluckometer-pupil-right" cx="65" cy="35" r="3" class="pluckometer-pupil"/>
+       <!-- Smile (repositioned) -->
+       <!-- Original: d="M 10 10 Q 50 45 90 10" -->
+       <path class="pluckometer-smile-curve" d="M 10 60 Q 50 95 90 60" fill="none" stroke-width="4" stroke-linecap="round"/>
    </svg>
    <div class="pluckometer-input-meter" title="Input Level (dB)">
         <div class="pluckometer-input-meter-label">IN</div>

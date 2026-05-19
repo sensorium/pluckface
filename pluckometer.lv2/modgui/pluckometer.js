@@ -7,9 +7,14 @@ function(event, funcs) {
     var cvPendingValue = null;
     var cvLastPaintMs = 0;
     var cvMeterTimer = null;
+    var leakyOnsetPendingValue = null; // New variable for leaky onset meter
+    var leakyOnsetLastPaintMs = 0;
+    var leakyOnsetMeterTimer = null;
     var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
     var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
-    if (!inputMeter && !cvMeter && !onsetLed && !smileCurve) {
+    var pupilLeft = event.icon.find('#pluckometer-pupil-left')[0]; // Reference to left pupil
+    var pupilRight = event.icon.find('#pluckometer-pupil-right')[0]; // Reference to right pupil
+    if (!inputMeter && !cvMeter && !onsetLed && !smileCurve && !pupilLeft && !pupilRight) {
         return;
     }
 
@@ -67,6 +72,38 @@ function(event, funcs) {
         smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + controlY + ' 90 ' + endY);
     }
 
+    function paintEyes(cv_out_val, leaky_onset_val) {
+        if (!pupilLeft || !pupilRight) {
+            return;
+        }
+
+        // Left pupil (cv_out_meter, 0-1 range)
+        var leftPupilNorm = cv_out_val;
+        if (leftPupilNorm < 0.0) leftPupilNorm = 0.0;
+        if (leftPupilNorm > 1.0) leftPupilNorm = 1.0;
+
+        // Right pupil (leaky_onset_meter, 0-10 range, normalize to 0-1)
+        var rightPupilNorm = leaky_onset_val / 10.0; // Normalize 0-10 to 0-1
+        if (rightPupilNorm < 0.0) rightPupilNorm = 0.0;
+        if (rightPupilNorm > 1.0) rightPupilNorm = 1.0;
+
+        // Eye parameters (from HTML SVG)
+        var eyeCenterX = 35; // For left eye
+        var eyeCenterY = 35;
+        var eyeRadius = 8;
+        var pupilRadius = 3;
+        var pupilMovementRange = eyeRadius - pupilRadius; // Max offset from center
+
+        // Pupil Y position: 0 = bottom, 1 = top
+        // pupilY = eyeCenterY + pupilMovementRange - (leftPupilNorm * 2 * pupilMovementRange); // Inverted for 0=bottom, 1=top
+        // Let's make it simpler: 0 = center, 1 = top
+        var leftPupilY = eyeCenterY - (leftPupilNorm * pupilMovementRange);
+        var rightPupilY = eyeCenterY - (rightPupilNorm * pupilMovementRange);
+
+        pupilLeft.setAttribute('cy', leftPupilY);
+        pupilRight.setAttribute('cy', rightPupilY);
+    }
+
     function flushCvPaint() {
         if (!cvMask) return;
         var cv = (typeof cvPendingValue === 'number') ? cvPendingValue : 0.0;
@@ -74,6 +111,7 @@ function(event, funcs) {
         if (cv > 1.0) cv = 1.0;
         cvMask.style.height = ((1 - cv) * 100) + '%';
         paintSmile(cv);
+        paintEyes(cv, leakyOnsetPendingValue || 0.0); // Pass both values to paintEyes
         cvLastPaintMs = Date.now();
         cvMeterTimer = null;
     }
@@ -89,6 +127,29 @@ function(event, funcs) {
         }
         if (!cvMeterTimer) {
             cvMeterTimer = setTimeout(flushCvPaint, INPUT_METER_INTERVAL_MS - elapsed);
+        }
+    }
+
+    function flushLeakyOnsetPaint() {
+        if (!pupilRight) return; // Only need to update if pupilRight exists
+        var leaky = (typeof leakyOnsetPendingValue === 'number') ? leakyOnsetPendingValue : 0.0;
+        // paintEyes will handle normalization and actual drawing
+        paintEyes(cvPendingValue || 0.0, leaky); // Pass both values
+        leakyOnsetLastPaintMs = Date.now();
+        leakyOnsetMeterTimer = null;
+    }
+
+    function queueLeakyOnsetPaint(leaky) {
+        if (!pupilRight) return;
+        leakyOnsetPendingValue = leaky;
+        var now = Date.now();
+        var elapsed = now - leakyOnsetLastPaintMs;
+        if (elapsed >= INPUT_METER_INTERVAL_MS) {
+            flushLeakyOnsetPaint();
+            return;
+        }
+        if (!leakyOnsetMeterTimer) {
+            leakyOnsetMeterTimer = setTimeout(flushLeakyOnsetPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
     }
 
@@ -125,6 +186,13 @@ function(event, funcs) {
                 cvMeterTimer = null;
             }
         }
+        if (leakyOnsetMeterTimer) { // Clear timer for new meter
+            clearTimeout(leakyOnsetMeterTimer);
+            leakyOnsetMeterTimer = null;
+        }
+        if (pupilLeft && pupilRight) { // Reset pupil positions
+            paintEyes(0.0, 0.0);
+        }
         if (onsetLed) onsetLed.classList.remove('active');
         paintSmile(0.0);
         return;
@@ -145,6 +213,11 @@ function(event, funcs) {
 
     if (symbol === 'cv_out_meter') {
         queueCvPaint(numericValue);
+        return;
+    }
+
+    if (symbol === 'leaky_onset_meter') { // Handle new meter updates
+        queueLeakyOnsetPaint(numericValue);
         return;
     }
 
