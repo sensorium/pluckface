@@ -583,22 +583,21 @@
 /* = INVERT CV SWITCH
 ================================================ */
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
-    display:block;
+    /* display:block; */
     background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}});
     position:absolute;
     left:539px;
-    top:190px;
-    width:44px;
-    height:44px;
+    top:170px;
+    width:80px;
+    height:80px;
     background-repeat:no-repeat;
-    background-size:auto 44px;
-    /* background-position:center top; */
-    background-position:0px 0px; 
+    background-size:auto 80px;
+    background-position:center centre;
     transform:translate(-50%, -50%);
     cursor:pointer;
     z-index:120;
 }
 
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch.on {
-    background-position:-44px 0px;
+    background-position:-80px 0px;
 }
