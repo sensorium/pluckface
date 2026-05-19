@@ -274,5 +274,5 @@
   lv2:symbol "leaky_onset_meter" ;
   lv2:name "Leaky Onset Meter" ;
   lv2:minimum 0.0 ;
-  lv2:maximum 10.0 ; // Max value chosen to give a reasonable range for the meter
+  lv2:maximum 10.0 ; # Max value chosen to give a reasonable range for the meter
 	] .

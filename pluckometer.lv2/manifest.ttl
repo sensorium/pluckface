@@ -23,7 +23,7 @@
         ] , [
             lv2:symbol "onset_indicator" ;
         ] , [
-            lv2:symbol "leaky_onset_meter" ; // Add the new meter port
+            lv2:symbol "leaky_onset_meter" ; # Add the new meter port
         ] ;
         modgui:brand "sensorium";
         modgui:label "Pluckometer";

@@ -66,9 +66,10 @@ function(event, funcs) {
         if (t < 0.0) t = 0.0;
         if (t > 1.0) t = 1.0;
 
-        var startY = 25 - (15 * t);
+        // Adjust Y coordinates for the new 100x100 viewBox (eyes are at 35)
+        var startY = 75 - (15 * t);
         var endY = startY;
-        var controlY = 25 + (20 * t);
+        var controlY = 75 + (20 * t);
         smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + controlY + ' 90 ' + endY);
     }
 
