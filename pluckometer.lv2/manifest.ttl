@@ -65,9 +65,5 @@
             lv2:index 8 ;
             lv2:symbol "cv_smoothing" ;
             lv2:name "CV Smoothing (50ms-1s)" ;
-        ] , [
-            lv2:index 9 ;
-            lv2:symbol "invert_cv" ;
-            lv2:name "Invert CV" ;
         ] ;
     ] .

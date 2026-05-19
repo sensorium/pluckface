@@ -215,15 +215,13 @@
   rdf:value 1.0
   ];
   ], [
-  a lv2:InputPort ,
-  lv2:ControlPort ;
-  lv2:index 9 ;
-  lv2:symbol "invert_cv" ;
-  lv2:name "Invert CV" ;
-  lv2:default 0 ;
-  lv2:minimum 0 ;
-  lv2:maximum 1 ;
-  lv2:portProperty lv2:toggled ;
+  a lv2:OutputPort, lv2:CVPort;
+  lv2:index 9;
+  lv2:symbol "cv_inverted_out";
+  lv2:name "Inverted CV Output";
+  lv2:minimum 0.0 ;
+  lv2:maximum 1.0 ;
+  mod:cvPortMode mod:unipolarPositive ;
   ], [
   a lv2:AudioPort ,
   lv2:InputPort ;

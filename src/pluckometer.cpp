@@ -51,7 +51,7 @@ typedef enum
   PLUCKOMETER_LEAKY_MIX = 6,
   PLUCKOMETER_LEAKY_DECAY_SECONDS = 7,
   PLUCKOMETER_CV_SMOOTHING = 8,
-  PLUCKOMETER_INVERT_CV = 9,
+  PLUCKOMETER_CV_INVERT_OUT = 9,
   PLUCKOMETER_INPUT = 10,
   PLUCKOMETER_CV_OUT = 11,
   PLUCKOMETER_CV_TRIGGER_OUT = 12,
@@ -102,9 +102,9 @@ typedef struct
   const float *leaky_mix;
   const float *leaky_decay_seconds;
   const float *cv_smoothing;
-  const float *invert_cv;
   const float *input;
   float *cv_out;
+  float *cv_inverted_out;
   float *cv_trigger_out;
   float *input_level_db;
   float *cv_out_meter;
@@ -232,8 +232,8 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
     break;
-  case PLUCKOMETER_INVERT_CV:
-    self->invert_cv = (float *)data;
+  case PLUCKOMETER_CV_INVERT_OUT:
+    self->cv_inverted_out = (float *)data;
     break;
   case PLUCKOMETER_INPUT:
     self->input = (float *)data;
@@ -276,16 +276,17 @@ run(LV2_Handle instance, uint32_t n_samples)
   // Hosts should connect all ports before run(), but guard anyway to avoid
   // hard crashes if a host/plugin state is incomplete.
   if (!self || !self->input || !self->cv_out || !self->cv_trigger_out ||
+      !self->cv_inverted_out ||
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
-      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
-      !self->invert_cv)
+      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing)
   {
     if (self && self->cv_out)
     {
       for (uint32_t i = 0; i < n_samples; i++)
       {
         self->cv_out[i] = 0.0f;
+        if (self->cv_inverted_out) self->cv_inverted_out[i] = 1.0f;
         if (self->cv_trigger_out)
         {
           self->cv_trigger_out[i] = kCvTriggerLow;
@@ -324,7 +325,6 @@ run(LV2_Handle instance, uint32_t n_samples)
   }
   const float cv_out_min = 0.0f;
   const float cv_out_max = 1.0f;
-  const bool invert = (*self->invert_cv > 0.5f);
 
   const float scale_target = *self->scale_cv_out;
   const float offset_target = *self->offset_cv_out;
@@ -439,11 +439,8 @@ run(LV2_Handle instance, uint32_t n_samples)
       *self->cv_out_meter = cv_value;
     }
 
-    // Apply inversion only to the final signal being sent to the output port
-    if (invert)
-      self->cv_out[i] = 1.0f - cv_value;
-    else
-      self->cv_out[i] = cv_value;
+    self->cv_out[i] = cv_value;
+    self->cv_inverted_out[i] = 1.0f - cv_value;
 
     if (self->trigger_samples_remaining > 0)
     {
