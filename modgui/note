@@ -1,24 +1,11 @@
 .mod-pedal-cloud .mod-switch-slide {
-    position: absolute;
-    width: 80px;
-    height: 80px;
     background-image: url(/resources/switch_slide3.png{{{ns}}});
+    position: absolute;
     background-repeat: no-repeat;
-    
-    /* VERTICAL MATH: 
-       We lock the width to the container (80px), and let the height scale automatically.
-       The browser will read the full 160px height of your file. */
-    background-size: 80px auto; 
-    
-    /* Default State (Frame 1 - Top) */
-    background-position: 0px 0px; 
-    
+    background-size: auto 80px;
     cursor: pointer;
-    z-index: 40;
-}
-
-/* Activated State (Frame 2 - Bottom) */
-.mod-pedal-cloud .mod-switch-slide.on {
-    /* We shift the background UPwards on the Y-axis by exactly one frame height */
-    background-position: 0px -80px; 
+    height: 80px;
+    width: 80px;
+	z-index: 40;
+    text-align:center;
 }

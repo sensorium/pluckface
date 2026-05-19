@@ -156,25 +156,6 @@ $(BUILDDIR)$(LV2NAME)$(LIB_EXT): src/$(LV2NAME).cpp $(OBJS) $(AUBIO_OBJS)
 		$(AUBIO_OBJS) $(OBJS)
 	$(STRIP) $(STRIPFLAGS) $(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
-gui: $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(BUILDDIR)modgui
-
-install-gui: gui
-	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-	install -m644 $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-ifneq ($(MOD),)
-	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui
-	install -t $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui $(BUILDDIR)modgui/*
-endif
-
-sync-gui: gui
-	@mkdir -p $(LOCAL_BUNDLE_DIR)
-	cp $(BUILDDIR)manifest.ttl $(LOCAL_BUNDLE_DIR)/manifest.ttl
-	cp $(BUILDDIR)$(LV2NAME).ttl $(LOCAL_BUNDLE_DIR)/$(LV2NAME).ttl
-ifneq ($(MOD),)
-	rm -rf $(LOCAL_BUNDLE_DIR)/modgui
-	cp -R $(BUILDDIR)modgui $(LOCAL_BUNDLE_DIR)/modgui
-endif
-
 $(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl $(MODGUI_FILES)
 	@rm -rf $(BUILDDIR)modgui
 	@mkdir -p $(BUILDDIR)modgui
@@ -216,4 +197,3 @@ clean:
 	-test -d $(BUILDDIR) && rm -rf $(BUILDDIR) || true
 
 .PHONY: clean all install uninstall
-.PHONY: clean all install uninstall gui sync-gui install-gui

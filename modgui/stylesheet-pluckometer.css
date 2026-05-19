@@ -316,8 +316,6 @@
 }
 
 
-/* = PINK SKIN (mod-boxy85 mod-pink — the only active skin)
-================================================ */
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink {
     background-image:url(/resources/pedals/pluck-base5.png{{{ns}}});
     background-size:598px 431px;
@@ -585,22 +583,22 @@
 /* = INVERT CV SWITCH
 ================================================ */
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch {
-    /* display:block; */
+    display:block;
+    background-image:url(/resources/pedals/switch-toggle-horizontal-80x80.png{{{ns}}});
     position:absolute;
     left:539px;
     top:190px;
     width:44px;
-    height:59px;
-    background-image:url(/resources/pedals/power-switch-88x119.png{{{ns}}});
+    height:44px;
     background-repeat:no-repeat;
-    background-size:44px auto;
+    background-size:auto 44px;
     /* background-position:center top; */
-    background-position: 0px 0px; 
-    /* transform:translate(-50%, -50%); */
+    background-position:0px 0px; 
+    transform:translate(-50%, -50%);
     cursor:pointer;
     z-index:120;
 }
+
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-invert-cv-switch.on {
-    /* background-position:center -59px; */
-    background-position: 0px -59px;
+    background-position:-44px 0px;
 }
