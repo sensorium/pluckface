@@ -56,11 +56,11 @@
         ] , [
             lv2:index 6 ;
             lv2:symbol "leaky_mix" ;
-            lv2:name "Leaky Mix" ;
+            lv2:name "Mix Window and Integrator" ;
         ] , [
             lv2:index 7 ;
             lv2:symbol "leaky_decay_seconds" ;
-            lv2:name "Leaky Decay" ;
+            lv2:name "Integrator Decay" ;
         ] , [
             lv2:index 8 ;
             lv2:symbol "cv_smoothing" ;
