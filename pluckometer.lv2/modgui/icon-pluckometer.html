@@ -4,7 +4,8 @@
     <!-- <div class="mod-plugin-name"><h1>{{label}}</h1></div> -->
     <div class="mod-light on" mod-role="bypass-light"></div>
     <div class="pluckometer-onset-method-group mod-control-group mod-enumerated-group clearfix" title="Onset Method">
-        <div class="mod-enumerated" mod-role="input-control-port" mod-port-symbol="onset_method" mod-widget="custom-select">
+        <div class="mod-enumerated" mod-role="input-control-port" mod-port-symbol="onset_method"
+            mod-widget="custom-select">
             <div mod-role="input-control-value" mod-port-symbol="onset_method" class="mod-enumerated-selected"></div>
             <div class="mod-enumerated-list" mod-widget-property="hidden">
                 <div mod-role="enumeration-option" mod-port-value="0">default (hfc)</div>
@@ -19,10 +20,12 @@
             </div>
         </div>
     </div>
-    <div class="pluckometer-silence-slider mod-slider" mod-role="icon-button" mod-button-type="slider" title="Silence Threshold">
+    <div class="pluckometer-silence-slider mod-slider" mod-role="icon-button" mod-button-type="slider"
+        title="Silence Threshold">
         <div class="mod-slider-image" mod-role="input-control-port" mod-port-symbol="silence_threshold"></div>
     </div>
-    <div class="pluckometer-onset-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Onset Sensitivity">
+    <div class="pluckometer-onset-knob mod-knob" mod-role="icon-button" mod-button-type="knob"
+        title="Onset Sensitivity">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="onset_sensitivity"></div>
     </div>
     <div class="pluckometer-window-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Window Seconds">
@@ -31,75 +34,90 @@
     <div class="pluckometer-leaky-mix-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Leaky Mix">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="leaky_mix"></div>
     </div>
-    <div class="pluckometer-leaky-decay-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Leaky Decay">
+    <div class="pluckometer-leaky-decay-knob mod-knob" mod-role="icon-button" mod-button-type="knob"
+        title="Leaky Decay">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="leaky_decay_seconds"></div>
     </div>
-    <div class="pluckometer-cv-smoothing-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="CV Smoothing">
+    <div class="pluckometer-cv-smoothing-knob mod-knob" mod-role="icon-button" mod-button-type="knob"
+        title="CV Smoothing">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="cv_smoothing"></div>
     </div>
-    <div class="pluckometer-offset-cv-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Offset CV Out">
+    <div class="pluckometer-offset-cv-knob mod-knob" mod-role="icon-button" mod-button-type="knob"
+        title="Offset CV Out">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="offset_cv_out"></div>
     </div>
     <div class="pluckometer-scale-cv-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Scale CV Out">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="scale_cv_out"></div>
     </div>
-   <svg class="pluckometer-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-       <!-- Eyes -->
-       <circle cx="35" cy="35" r="8" fill="none" class="pluckometer-eye"/>
-       <circle cx="65" cy="35" r="8" fill="none" class="pluckometer-eye"/>
-       <!-- Pupils -->
-       <circle id="pluckometer-pupil-left" cx="35" cy="35" r="3" class="pluckometer-pupil"/>
-       <circle id="pluckometer-pupil-right" cx="65" cy="35" r="3" class="pluckometer-pupil"/>
-       <!-- Smile (repositioned) -->
-       <!-- Original: d="M 10 10 Q 50 45 90 10" -->
-       <path class="pluckometer-smile-curve" d="M 10 60 Q 50 95 90 60" fill="none" stroke-width="4" stroke-linecap="round"/>
-   </svg>
-   <div class="pluckometer-input-meter" title="Input Level (dB)">
+    <svg class="pluckometer-face" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Face Frame Background -->
+        <circle cx="100" cy="100" r="120" class="pluckometer-face-frame" />
+        <!-- Left Eye Socket and Pupil -->
+        <circle cx="70" cy="70" r="16" class="pluckometer-eye-socket" />
+        <circle id="pluckometer-pupil-left" cx="70" cy="70" r="6" />
+
+        <!-- Right Eye Socket and Pupil (Symmetrical at 200 - 70 = 130) -->
+        <circle cx="130" cy="70" r="16" class="pluckometer-eye-socket"  />
+        <circle id="pluckometer-pupil-right" cx="130" cy="70" r="6"  />
+
+        <!-- Smile Curve: Initial state is a flat line at Y=150 -->
+        <path class="pluckometer-smile-curve" d="M 20 150 Q 100 150 180 150" fill="none" stroke="#333" stroke-width="4"
+            stroke-linecap="round" />
+    </svg>
+
+
+    <div class="pluckometer-input-meter" title="Input Level (dB)">
         <div class="pluckometer-input-meter-label">IN</div>
         <div class="pluckometer-input-meter-bar">
             <div class="pluckometer-input-meter-mask"></div>
         </div>
-   </div>
-   <div class="pluckometer-cv-meter" title="CV Output (0..1)">
+    </div>
+    <div class="pluckometer-cv-meter" title="CV Output (0..1)">
         <div class="pluckometer-cv-meter-label">CV</div>
         <div class="pluckometer-cv-meter-bar">
             <div class="pluckometer-cv-meter-mask"></div>
         </div>
-   </div>
-   <div class="pluckometer-onset-led" title="Onset Detected"></div>
-   <div class="mod-footswitch" mod-role="bypass"></div>
-   <div class="mod-pedal-input">
+    </div>
+    <div class="pluckometer-onset-led" title="Onset Detected"></div>
+    <div class="mod-footswitch" mod-role="bypass"></div>
+    <div class="mod-pedal-input">
         {{#effect.ports.audio.input}}
-        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-audio-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-audio-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-input-image"></div>
         </div>
         {{/effect.ports.audio.input}}
         {{#effect.ports.midi.input}}
-        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-midi-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-midi-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-input-image"></div>
         </div>
         {{/effect.ports.midi.input}}
         {{#effect.ports.cv.input}}
-        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-cv-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-cv-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-input-image"></div>
         </div>
         {{/effect.ports.cv.input}}
-   </div>
-   <div class="mod-pedal-output">
+    </div>
+    <div class="mod-pedal-output">
         {{#effect.ports.audio.output}}
-        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-audio-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-audio-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-output-image"></div>
         </div>
         {{/effect.ports.audio.output}}
         {{#effect.ports.midi.output}}
-        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-midi-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-midi-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-output-image"></div>
         </div>
         {{/effect.ports.midi.output}}
         {{#effect.ports.cv.output}}
-        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-cv-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-cv-port"
+            mod-port-symbol="{{symbol}}">
             <div class="mod-pedal-output-image"></div>
         </div>
         {{/effect.ports.cv.output}}
-   </div>
+    </div>
 </div>
