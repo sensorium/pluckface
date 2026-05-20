@@ -159,7 +159,7 @@
   lv2:ControlPort ;
   lv2:index 6 ;
   lv2:symbol "leaky_mix" ;
-  lv2:name "Leaky Mix";
+  lv2:name "Mix Window and Integrator Levels";
   lv2:default 0.0 ;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
@@ -176,7 +176,7 @@
   lv2:ControlPort ;
   lv2:index 7 ;
   lv2:symbol "leaky_decay_seconds" ;
-  lv2:name "Leaky Decay";
+  lv2:name "Integrator Decay";
   lv2:default 1.0 ;
   lv2:minimum 0.05 ;
   lv2:maximum 10.0 ;

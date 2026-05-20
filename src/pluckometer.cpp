@@ -435,7 +435,7 @@ run(LV2_Handle instance, uint32_t n_samples)
   if (self->leaky_onset_meter)
   {
     // Output the raw leaky_onset_level, capped at 10.0 for reasonable metering range.
-    *self->leaky_onset_meter = std::min(10.0f, self->leaky_onset_level);
+    *self->leaky_onset_meter = std::min(100.0f, self->leaky_onset_level);
   }
 
   // Fill CV output for ALL samples in this block

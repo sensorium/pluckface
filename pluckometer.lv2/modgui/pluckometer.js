@@ -4,12 +4,20 @@ function(event, funcs) {
 
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
-    var cvPendingValue = null;
+
+    // State variables for throttled painting (closures)
+    var inputPendingDb = -90.0;
+    var inputLastPaintMs = 0;
+    var inputMeterTimer = null;
+
+    var cvPendingValue = 0.0;
     var cvLastPaintMs = 0;
     var cvMeterTimer = null;
-    var leakyOnsetPendingValue = null; // New variable for leaky onset meter
+
+    var leakyOnsetPendingValue = 0.0;
     var leakyOnsetLastPaintMs = 0;
     var leakyOnsetMeterTimer = null;
+
     var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
     var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
     var pupilLeft = event.icon.find('#pluckometer-pupil-left')[0]; // Reference to left pupil
@@ -25,34 +33,23 @@ function(event, funcs) {
     }
 
     function flushInputPaint() {
-        if (!inputMeter || !inputMask) {
-            return;
-        }
-        var db = (typeof inputMeter._pendingInputDb === 'number') ? inputMeter._pendingInputDb : -90.0;
-        if (db < -90.0) db = -90.0;
-        if (db > 0.0) db = 0.0;
+        if (!inputMask) return;
+        var db = Math.min(Math.max(inputPendingDb, -90.0), 0.0);
         var norm = (db + 90.0) / 90.0;
-        if (norm < 0.0) norm = 0.0;
-        if (norm > 1.0) norm = 1.0;
         inputMask.style.height = ((1 - norm) * 100) + '%';
-        inputMeter._lastInputPaintMs = Date.now();
-        inputMeter._inputMeterTimer = null;
+        inputLastPaintMs = Date.now();
+        inputMeterTimer = null;
     }
 
     function queueInputPaint(db) {
-        if (!inputMeter) {
-            return;
-        }
-        inputMeter._pendingInputDb = db;
+        if (!inputMask) return;
+        inputPendingDb = db;
         var now = Date.now();
-        var last = inputMeter._lastInputPaintMs || 0;
-        var elapsed = now - last;
+        var elapsed = now - inputLastPaintMs;
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
             flushInputPaint();
-            return;
-        }
-        if (!inputMeter._inputMeterTimer) {
-            inputMeter._inputMeterTimer = setTimeout(flushInputPaint, INPUT_METER_INTERVAL_MS - elapsed);
+        } else if (!inputMeterTimer) {
+            inputMeterTimer = setTimeout(flushInputPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
     }
 
@@ -60,59 +57,40 @@ function(event, funcs) {
         if (!smileCurve) {
             return;
         }
+        var t = Math.min(Math.max(cv, 0.0), 1.0);
 
-        // Interpolate from a flat line (cv=0) to a smiling curve (cv=1).
-        var t = cv;
-        if (t < 0.0) t = 0.0;
-        if (t > 1.0) t = 1.0;
-
-        // Adjust Y coordinates for the new 100x100 viewBox (eyes are at 35)
-        var startY = 75 - (15 * t);
-        var endY = startY;
-        var controlY = 75 + (20 * t);
-        smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + controlY + ' 90 ' + endY);
+        // Adjust Y coordinates for the new 200x200 viewBox (eyes are at 70)
+        var startY = 150 - (30 * t);
+        smileCurve.setAttribute('d', 'M 20 ' + startY + ' Q 100 ' + (150 + (40 * t)) + ' 180 ' + startY);
+        
+        // Set CSS variable for efficiency
+        smileCurve.style.setProperty('--smile-t', t);
     }
 
     function paintEyes(cv_out_val, leaky_onset_val) {
         if (!pupilLeft || !pupilRight) {
             return;
         }
+        var leftNorm = Math.min(Math.max(cv_out_val, 0.0), 1.0);
+        var rightNorm = Math.min(Math.max(leaky_onset_val / 100.0, 0.0), 1.0);
 
-        // Left pupil (cv_out_meter, 0-1 range)
-        var leftPupilNorm = cv_out_val;
-        if (leftPupilNorm < 0.0) leftPupilNorm = 0.0;
-        if (leftPupilNorm > 1.0) leftPupilNorm = 1.0;
+        var range = 10; // movement range (16 eye - 6 pupil)
+        var centerY = 70;
 
-        // Right pupil (leaky_onset_meter, 0-10 range, normalize to 0-1)
-        var rightPupilNorm = leaky_onset_val / 10.0; // Normalize 0-10 to 0-1
-        if (rightPupilNorm < 0.0) rightPupilNorm = 0.0;
-        if (rightPupilNorm > 1.0) rightPupilNorm = 1.0;
-
-        // Eye parameters (from HTML SVG)
-        var eyeCenterX = 35; // For left eye
-        var eyeCenterY = 35;
-        var eyeRadius = 8;
-        var pupilRadius = 3;
-        var pupilMovementRange = eyeRadius - pupilRadius; // Max offset from center
-
-        // Pupil Y position: 0 = bottom, 1 = top
-        // pupilY = eyeCenterY + pupilMovementRange - (leftPupilNorm * 2 * pupilMovementRange); // Inverted for 0=bottom, 1=top
-        // Let's make it simpler: 0 = center, 1 = top
-        var leftPupilY = eyeCenterY - (leftPupilNorm * pupilMovementRange);
-        var rightPupilY = eyeCenterY - (rightPupilNorm * pupilMovementRange);
-
-        pupilLeft.setAttribute('cy', leftPupilY);
-        pupilRight.setAttribute('cy', rightPupilY);
+        pupilLeft.setAttribute('cy', centerY - (leftNorm * range));
+        pupilRight.setAttribute('cy', centerY - (rightNorm * range));
+        
+        // Set CSS variables for efficiency
+        pupilLeft.style.setProperty('--pupil-norm', leftNorm);
+        pupilRight.style.setProperty('--pupil-norm', rightNorm);
     }
 
     function flushCvPaint() {
         if (!cvMask) return;
-        var cv = (typeof cvPendingValue === 'number') ? cvPendingValue : 0.0;
-        if (cv < 0.0) cv = 0.0;
-        if (cv > 1.0) cv = 1.0;
+        var cv = Math.min(Math.max(cvPendingValue || 0.0, 0.0), 1.0);
         cvMask.style.height = ((1 - cv) * 100) + '%';
         paintSmile(cv);
-        paintEyes(cv, leakyOnsetPendingValue || 0.0); // Pass both values to paintEyes
+        paintEyes(cv, leakyOnsetPendingValue || 0.0);
         cvLastPaintMs = Date.now();
         cvMeterTimer = null;
     }
@@ -124,18 +102,15 @@ function(event, funcs) {
         var elapsed = now - cvLastPaintMs;
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
             flushCvPaint();
-            return;
-        }
-        if (!cvMeterTimer) {
+        } else if (!cvMeterTimer) {
             cvMeterTimer = setTimeout(flushCvPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
     }
 
     function flushLeakyOnsetPaint() {
         if (!pupilRight) return; // Only need to update if pupilRight exists
-        var leaky = (typeof leakyOnsetPendingValue === 'number') ? leakyOnsetPendingValue : 0.0;
-        // paintEyes will handle normalization and actual drawing
-        paintEyes(cvPendingValue || 0.0, leaky); // Pass both values
+        var leaky = leakyOnsetPendingValue || 0.0;
+        paintEyes(cvPendingValue || 0.0, leaky);
         leakyOnsetLastPaintMs = Date.now();
         leakyOnsetMeterTimer = null;
     }
@@ -147,9 +122,7 @@ function(event, funcs) {
         var elapsed = now - leakyOnsetLastPaintMs;
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
             flushLeakyOnsetPaint();
-            return;
-        }
-        if (!leakyOnsetMeterTimer) {
+        } else if (!leakyOnsetMeterTimer) {
             leakyOnsetMeterTimer = setTimeout(flushLeakyOnsetPaint, INPUT_METER_INTERVAL_MS - elapsed);
         }
     }
@@ -170,27 +143,31 @@ function(event, funcs) {
             autoSilenceSlider.addClass('pluckometer-hidden-control');
         }
 
-        if (inputMeter && inputMeter._inputMeterTimer) {
-            clearTimeout(inputMeter._inputMeterTimer);
-            inputMeter._inputMeterTimer = null;
+        if (inputMeterTimer) {
+            clearTimeout(inputMeterTimer);
+            inputMeterTimer = null;
         }
-
+        inputLastPaintMs = Date.now();
+        
         if (inputMask) {
             inputMask.style.height = '100%';
         }
         if (cvMask) {
             cvMask.style.height = '100%';
             cvPendingValue = 0.0;
-            cvLastPaintMs = Date.now();
+            cvLastPaintMs = inputLastPaintMs;
             if (cvMeterTimer) {
                 clearTimeout(cvMeterTimer);
                 cvMeterTimer = null;
             }
         }
-        if (leakyOnsetMeterTimer) { // Clear timer for new meter
+        if (leakyOnsetMeterTimer) {
             clearTimeout(leakyOnsetMeterTimer);
             leakyOnsetMeterTimer = null;
         }
+        leakyOnsetPendingValue = 0.0;
+        leakyOnsetLastPaintMs = inputLastPaintMs;
+
         if (pupilLeft && pupilRight) { // Reset pupil positions
             paintEyes(0.0, 0.0);
         }
