@@ -49,22 +49,19 @@
     <div class="pluckometer-scale-cv-knob mod-knob" mod-role="icon-button" mod-button-type="knob" title="Scale CV Out">
         <div class="mod-knob-image" mod-role="input-control-port" mod-port-symbol="scale_cv_out"></div>
     </div>
-    <!-- THESE FACE PARAMS ARE JUST PLACEHOLDERS, THEY GET SET IN THE .JS -->
-    <svg class="pluckometer-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- Face Frame Background -->
-        <circle cx="50" cy="50" r="47.5" class="pluckometer-face-frame" />
-        <!-- Left Eye Socket and Pupil -->
-        <circle cx="35" cy="35" r="8" class="pluckometer-eye-socket" />
-        <circle id="pluckometer-pupil-left" cx="35" cy="35" r="3" />
-
-        <!-- Right Eye Socket and Pupil (Symmetrical at 200 - 70 = 130) -->
-        <circle cx="65" cy="35" r="8" class="pluckometer-eye-socket"  />
-        <circle id="pluckometer-pupil-right" cx="65" cy="35" r="3"  />
-
-        <!-- Smile Curve: Initial state is a flat line at Y=150 -->
-        <path class="pluckometer-smile-curve" d="M 10 75 Q 50 75 90 75" 
-            stroke-linecap="round" />
-    </svg>
+    <!-- Face geometry is static CSS; JS only sets CSS variables on animated parts. -->
+    <div class="pluckometer-face">
+        <div class="pluckometer-face-frame"></div>
+        <div class="pluckometer-eye pluckometer-eye-left">
+            <div class="pluckometer-eye-socket"></div>
+            <div class="pluckometer-pupil" id="pluckometer-pupil-left"></div>
+        </div>
+        <div class="pluckometer-eye pluckometer-eye-right">
+            <div class="pluckometer-eye-socket"></div>
+            <div class="pluckometer-pupil" id="pluckometer-pupil-right"></div>
+        </div>
+        <div class="pluckometer-smile-curve"></div>
+    </div>
 
 
     <div class="pluckometer-input-meter" title="Input Level (dB)">
