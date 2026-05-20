@@ -2,6 +2,19 @@ function(event, funcs) {
     var INPUT_METER_HZ = 10;
     var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
 
+    // Central Source of Truth for Face Geometry (100x100 ViewBox)
+    var FACE_CONFIG = {
+        eyeCenterY: 35,
+        eyeCenterXLeft: 35,
+        eyeCenterXRight: 65,
+        eyeRadius: 8,
+        pupilRadius: 3,
+        smileBaselineY: 75,
+        smileXLeft: 10,
+        smileXRight: 90,
+        smileCenterX: 50
+    };
+
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
 
@@ -54,28 +67,26 @@ function(event, funcs) {
     }
 
     function paintSmile(cv) {
-        if (!smileCurve) {
-            return;
-        }
-        var t = Math.min(Math.max(cv, 0.0), 1.0);
+        if (!smileCurve) return;
+        var t = cv;
 
-        // Adjust Y coordinates for the new 200x200 viewBox (eyes are at 70)
-        var startY = 75 - (15 * t);
-        smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + (75 + (20 * t)) + ' 90 ' + startY);
-        
+        var startY = FACE_CONFIG.smileBaselineY - (15 * t);
+        var controlY = FACE_CONFIG.smileBaselineY + (20 * t);
+        var d = 'M ' + FACE_CONFIG.smileXLeft + ' ' + startY + ' Q ' + FACE_CONFIG.smileCenterX + ' ' + controlY + ' ' + FACE_CONFIG.smileXRight + ' ' + startY;
+        smileCurve.setAttribute('d', d);
+
         // Set CSS variable for efficiency
         smileCurve.style.setProperty('--smile-t', t);
     }
 
     function paintEyes(cv_out_val, leaky_onset_val) {
-        if (!pupilLeft || !pupilRight) {
-            return;
-        }
+        if (!pupilLeft || !pupilRight) return;
+
         var leftNorm = Math.min(Math.max(cv_out_val, 0.0), 1.0);
         var rightNorm = Math.min(Math.max(leaky_onset_val / 100.0, 0.0), 1.0);
 
-        var range = 5; // movement range (8 eye - 3 pupil)
-        var centerY = 35;
+        var range = FACE_CONFIG.eyeRadius - FACE_CONFIG.pupilRadius;
+        var centerY = FACE_CONFIG.eyeCenterY;
 
         pupilLeft.setAttribute('cy', centerY - (leftNorm * range));
         pupilRight.setAttribute('cy', centerY - (rightNorm * range));
@@ -141,6 +152,23 @@ function(event, funcs) {
         var autoSilenceSlider = event.icon.find('.mod-control-group .mod-slider-image[mod-port-symbol="silence_threshold"]').closest('.mod-slider');
         if (autoSilenceSlider && autoSilenceSlider.length) {
             autoSilenceSlider.addClass('pluckometer-hidden-control');
+        }
+
+        // Initialize Face Geometry from FACE_CONFIG
+        var eyeSockets = event.icon.find('.pluckometer-eye-socket');
+        if (eyeSockets.length >= 2) {
+            eyeSockets[0].setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
+            eyeSockets[0].setAttribute('cy', FACE_CONFIG.eyeCenterY);
+            eyeSockets[0].setAttribute('r', FACE_CONFIG.eyeRadius);
+            eyeSockets[1].setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
+            eyeSockets[1].setAttribute('cy', FACE_CONFIG.eyeCenterY);
+            eyeSockets[1].setAttribute('r', FACE_CONFIG.eyeRadius);
+        }
+        if (pupilLeft && pupilRight) {
+            pupilLeft.setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
+            pupilLeft.setAttribute('r', FACE_CONFIG.pupilRadius);
+            pupilRight.setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
+            pupilRight.setAttribute('r', FACE_CONFIG.pupilRadius);
         }
 
         if (inputMeterTimer) {

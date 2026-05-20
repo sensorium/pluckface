@@ -67,23 +67,25 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-face {
     position:absolute;
     left:50%;
-    top:130px;
+    top:125px;
     transform:translateX(-50%);
     width:160px;
     height:160px; 
     pointer-events:none;
-    overflow:visible !important;
+    /* overflow:visible !important; */
     z-index:60;
-    filter: drop-shadow(0px 0px 10px #00ff00); /* Unified neon glow for the whole face */
+    filter: drop-shadow(0px 0px 10px #00ff00);
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-face-frame {
-    fill: #004700; /* Darker green background for better contrast */
+    fill: #00cf00; /* Darker green background for better contrast */
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-smile-curve {
-    stroke: #00ff00;
+    stroke: #004700;
     stroke-width: 4;
+    stroke-linecap: round;
+    fill: "none";
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-eye-socket {
