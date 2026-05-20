@@ -2,6 +2,19 @@ function(event, funcs) {
     var INPUT_METER_HZ = 10;
     var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
 
+    // Central Source of Truth for Face Geometry (100x100 ViewBox)
+    var FACE_CONFIG = {
+        eyeCenterY: 35,
+        eyeCenterXLeft: 35,
+        eyeCenterXRight: 65,
+        eyeRadius: 10,
+        pupilRadius: 3,
+        smileBaselineY: 75,
+        smileXLeft: 20,
+        smileXRight: 80,
+        smileCenterX: 50
+    };
+
     var inputMeter = event.icon.find('.pluckometer-input-meter')[0];
     var cvMeter = event.icon.find('.pluckometer-cv-meter')[0];
 
@@ -18,6 +31,10 @@ function(event, funcs) {
     var leakyOnsetLastPaintMs = 0;
     var leakyOnsetMeterTimer = null;
 
+    var pupilLeftSmoothNorm = 0.0;
+    var pupilRightSmoothNorm = 0.0;
+    var PUPIL_SMOOTH_STEP = 0.45;
+
     var onsetLed = event.icon.find('.pluckometer-onset-led')[0];
     var smileCurve = event.icon.find('.pluckometer-smile-curve')[0];
     var pupilLeft = event.icon.find('#pluckometer-pupil-left')[0]; // Reference to left pupil
@@ -28,7 +45,8 @@ function(event, funcs) {
 
     var inputMask = inputMeter ? inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
     var cvMask = cvMeter ? cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
-    if (!inputMask && !cvMask && !onsetLed) {
+    var hasFace = smileCurve || (pupilLeft && pupilRight);
+    if (!inputMask && !cvMask && !onsetLed && !hasFace) {
         return;
     }
 
@@ -54,49 +72,55 @@ function(event, funcs) {
     }
 
     function paintSmile(cv) {
-        if (!smileCurve) {
-            return;
-        }
-        var t = Math.min(Math.max(cv, 0.0), 1.0);
+        if (!smileCurve) return;
+        var t = cv;
 
-        // Adjust Y coordinates for the new 200x200 viewBox (eyes are at 70)
-        var startY = 75 - (15 * t);
-        smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + (75 + (20 * t)) + ' 90 ' + startY);
-        
+        var startY = FACE_CONFIG.smileBaselineY - (15 * t);
+        var controlY = FACE_CONFIG.smileBaselineY + (20 * t);
+        var d = 'M ' + FACE_CONFIG.smileXLeft + ' ' + startY + ' Q ' + FACE_CONFIG.smileCenterX + ' ' + controlY + ' ' + FACE_CONFIG.smileXRight + ' ' + startY;
+        smileCurve.setAttribute('d', d);
+
         // Set CSS variable for efficiency
         smileCurve.style.setProperty('--smile-t', t);
     }
 
-    function paintEyes(cv_out_val, leaky_onset_val) {
-        if (!pupilLeft || !pupilRight) {
-            return;
-        }
-        var leftNorm = Math.min(Math.max(cv_out_val, 0.0), 1.0);
-        var rightNorm = Math.min(Math.max(leaky_onset_val / 100.0, 0.0), 1.0);
+    function paintEyes(cv_out_val, leaky_onset_val, snap) {
+        if (!pupilLeft || !pupilRight) return;
 
-        var range = 5; // movement range (8 eye - 3 pupil)
-        var centerY = 35;
+        var leftTarget = Math.min(Math.max(cv_out_val, 0.0), 1.0);
+        // leaky_onset_meter scale for leaky_onset_val is set in pluckometer.cpp
+        var rightTarget = Math.min(Math.max(leaky_onset_val / 20.0, 0.0), 1.0);
+        var step = snap ? 1.0 : PUPIL_SMOOTH_STEP;
 
-        pupilLeft.setAttribute('cy', centerY - (leftNorm * range));
-        pupilRight.setAttribute('cy', centerY - (rightNorm * range));
-        
-        // Set CSS variables for efficiency
-        pupilLeft.style.setProperty('--pupil-norm', leftNorm);
-        pupilRight.style.setProperty('--pupil-norm', rightNorm);
+        pupilLeftSmoothNorm += step * (leftTarget - pupilLeftSmoothNorm);
+        pupilRightSmoothNorm += step * (rightTarget - pupilRightSmoothNorm);
+
+        var range = FACE_CONFIG.eyeRadius - FACE_CONFIG.pupilRadius;
+        var restY = FACE_CONFIG.eyeCenterY + (FACE_CONFIG.eyeRadius / 2);
+
+        pupilLeft.setAttribute('cy', restY - (pupilLeftSmoothNorm * range));
+        pupilRight.setAttribute('cy', restY - (pupilRightSmoothNorm * range));
+    }
+
+    function resetPupilMotion() {
+        pupilLeftSmoothNorm = 0.0;
+        pupilRightSmoothNorm = 0.0;
+        paintEyes(0.0, 0.0, true);
     }
 
     function flushCvPaint() {
-        if (!cvMask) return;
         var cv = Math.min(Math.max(cvPendingValue || 0.0, 0.0), 1.0);
-        cvMask.style.height = ((1 - cv) * 100) + '%';
+        if (cvMask) {
+            cvMask.style.height = ((1 - cv) * 100) + '%';
+        }
         paintSmile(cv);
-        paintEyes(cv, leakyOnsetPendingValue || 0.0);
+        paintEyes(cv, leakyOnsetPendingValue || 0.0, false);
         cvLastPaintMs = Date.now();
         cvMeterTimer = null;
     }
 
     function queueCvPaint(cv) {
-        if (!cvMask) return;
+        if (!cvMask && !(pupilLeft && pupilRight) && !smileCurve) return;
         cvPendingValue = cv;
         var now = Date.now();
         var elapsed = now - cvLastPaintMs;
@@ -143,6 +167,23 @@ function(event, funcs) {
             autoSilenceSlider.addClass('pluckometer-hidden-control');
         }
 
+        // Initialize Face Geometry from FACE_CONFIG
+        var eyeSockets = event.icon.find('.pluckometer-eye-socket');
+        if (eyeSockets.length >= 2) {
+            eyeSockets[0].setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
+            eyeSockets[0].setAttribute('cy', FACE_CONFIG.eyeCenterY);
+            eyeSockets[0].setAttribute('r', FACE_CONFIG.eyeRadius);
+            eyeSockets[1].setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
+            eyeSockets[1].setAttribute('cy', FACE_CONFIG.eyeCenterY);
+            eyeSockets[1].setAttribute('r', FACE_CONFIG.eyeRadius);
+        }
+        if (pupilLeft && pupilRight) {
+            pupilLeft.setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
+            pupilLeft.setAttribute('r', FACE_CONFIG.pupilRadius);
+            pupilRight.setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
+            pupilRight.setAttribute('r', FACE_CONFIG.pupilRadius);
+        }
+
         if (inputMeterTimer) {
             clearTimeout(inputMeterTimer);
             inputMeterTimer = null;
@@ -168,8 +209,8 @@ function(event, funcs) {
         leakyOnsetPendingValue = 0.0;
         leakyOnsetLastPaintMs = inputLastPaintMs;
 
-        if (pupilLeft && pupilRight) { // Reset pupil positions
-            paintEyes(0.0, 0.0);
+        if (pupilLeft && pupilRight) {
+            resetPupilMotion();
         }
         if (onsetLed) onsetLed.classList.remove('active');
         paintSmile(0.0);

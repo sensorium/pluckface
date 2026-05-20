@@ -67,7 +67,7 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-face {
     position:absolute;
     left:50%;
-    top:125px;
+    top:120px;
     transform:translateX(-50%);
     width:160px;
     height:160px; 
@@ -85,7 +85,7 @@
     stroke: #004700;
     stroke-width: 4;
     stroke-linecap: round;
-    fill: "none";
+    fill: none;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-eye-socket {
