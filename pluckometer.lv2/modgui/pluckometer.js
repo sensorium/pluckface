@@ -60,8 +60,8 @@ function(event, funcs) {
         var t = Math.min(Math.max(cv, 0.0), 1.0);
 
         // Adjust Y coordinates for the new 200x200 viewBox (eyes are at 70)
-        var startY = 150 - (30 * t);
-        smileCurve.setAttribute('d', 'M 20 ' + startY + ' Q 100 ' + (150 + (40 * t)) + ' 180 ' + startY);
+        var startY = 75 - (15 * t);
+        smileCurve.setAttribute('d', 'M 10 ' + startY + ' Q 50 ' + (75 + (20 * t)) + ' 90 ' + startY);
         
         // Set CSS variable for efficiency
         smileCurve.style.setProperty('--smile-t', t);
@@ -74,8 +74,8 @@ function(event, funcs) {
         var leftNorm = Math.min(Math.max(cv_out_val, 0.0), 1.0);
         var rightNorm = Math.min(Math.max(leaky_onset_val / 100.0, 0.0), 1.0);
 
-        var range = 10; // movement range (16 eye - 6 pupil)
-        var centerY = 70;
+        var range = 5; // movement range (8 eye - 3 pupil)
+        var centerY = 35;
 
         pupilLeft.setAttribute('cy', centerY - (leftNorm * range));
         pupilRight.setAttribute('cy', centerY - (rightNorm * range));

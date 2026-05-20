@@ -69,34 +69,33 @@
     left:50%;
     top:130px; /* Adjust position to fit the face */
     transform:translateX(-50%);
-    width:120px;
-    height:120px; /* Make it taller to accommodate eyes and smile */
+    width:160px;
+    height:160px; 
     pointer-events:none;
     z-index:60;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-face-frame {
-    fill: #00b000; /* Mid green background */
+    fill: #00cb00; /* Mid green background */
     /* stroke: #004400; Brighter green border */
     /* stroke-width: 2; */
-    filter: drop-shadow(0px 0px 10px #00b000);
+    filter: drop-shadow(0px 0px 50px #00cb00);
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-smile-curve {
     stroke: #00ff00; /* Classic green-scale color */
-    filter: drop-shadow(0px 0px 10px #00ff00); /* Green glow effect */
+    filter: drop-shadow(0px 0px 50px #00ff00); /* Green glow effect */
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-eye-socket {
-    /* stroke: #004700;
-    stroke-width: 2; */
+    stroke: #004700;
+    stroke-width: 2;
     fill: #00ff00;
-    filter: drop-shadow(0px 0px 10px #00ff00);
+    filter: drop-shadow(0px 0px 50px #00ff00);
 }
 
 .mod-pedal-boxy{{{cns}}} [id^="pluckometer-pupil-"] {
     fill: #004700;
-    /* filter: drop-shadow(0px 0px 1px #00ff00); Subtle glow for pupils */
 }
 
 
