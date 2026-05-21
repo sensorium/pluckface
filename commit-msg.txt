@@ -1,3 +1,0 @@
-Unify MOD GUI display updates and improve face metering.
-
-Drive meters, smile, and pupils from one 10 Hz flush so visuals stay in sync, smooth pupil motion with correct leaky meter scaling, and cap leaky_onset_meter at 20 to match the UI.

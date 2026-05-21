@@ -1,0 +1,8 @@
+.*.swp
+.waf*
+build
+.lock-waf*
+*.so
+*.dylib
+pluckometer.lv2
+aubio
