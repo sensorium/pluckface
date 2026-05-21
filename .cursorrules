@@ -16,9 +16,6 @@
 
 ## Data Normalization & Metering
 - **Throttling**: UI updates for meters must be throttled to 10Hz (approx 100ms) using the `INPUT_METER_INTERVAL_MS` pattern.
-- **Input Levels**: Normalize dB values from `-90.0` to `0.0`.
-- **CV Meters**: Range is strictly `0.0` to `1.0`.
-- **Leaky Onset Meter**: Range is `0.0` to `100.0`. Always normalize by dividing by `100.0` in the UI logic.
 
 ## Coding Patterns
 - **Throttled Painting**: Use "PendingValue" variables and "Flush/Queue" function pairs. 
@@ -30,3 +27,6 @@
 - `/modgui/`: Contains the source UI files.
 - `/pluckometer.lv2/modgui/`: Contains the deployed UI files (these get overwritten during the build, so do not need to be synced).
 - `/src/`: C/C++ audio engine logic.
+
+## Build commands
+- **To test builds**:make clean && make MOD=1 AUBIO_MODE=vendored sync-local-bundle
