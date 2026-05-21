@@ -2,8 +2,9 @@ function(event, funcs) {
     var INPUT_METER_HZ = 10;
     var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
     var UI_STATE_KEY = 'pluckometerUi';
-    var PUPIL_SMOOTH_STEP = 0.45;
     var PAINT_EPSILON = 0.001;
+    var INPUT_DB_EPSILON = 0.1;
+    var LEAKY_EPSILON = 0.05;
 
     var icon = event.icon;
 
@@ -14,15 +15,15 @@ function(event, funcs) {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
                 leakyOnsetPendingValue: 0.0,
+                onsetIndicatorPending: false,
                 displayLastPaintMs: 0,
                 displayTimer: null,
-                pupilLeftSmoothNorm: 0.0,
-                pupilRightSmoothNorm: 0.0,
                 paintedInputNorm: null,
                 paintedCv: null,
                 paintedSmileT: null,
                 paintedPupilLeft: null,
-                paintedPupilRight: null
+                paintedPupilRight: null,
+                paintedOnsetActive: null
             };
             icon.data(UI_STATE_KEY, state);
         }
@@ -64,6 +65,20 @@ function(event, funcs) {
         el.style.setProperty(name, value);
     }
 
+    function paintOnsetLed(dom, state) {
+        if (!dom.onsetLed) return;
+        var active = state.onsetIndicatorPending;
+        if (state.paintedOnsetActive === active) {
+            return;
+        }
+        state.paintedOnsetActive = active;
+        if (active) {
+            dom.onsetLed.classList.add('active');
+        } else {
+            dom.onsetLed.classList.remove('active');
+        }
+    }
+
     function flushDisplayPaint() {
         var state = getState(false);
         if (!state) return;
@@ -71,11 +86,8 @@ function(event, funcs) {
         var dom = bindDom(state);
         var cv = Math.min(Math.max(state.cvPendingValue || 0.0, 0.0), 1.0);
         var leaky = state.leakyOnsetPendingValue || 0.0;
-        var leftTarget = cv;
-        var rightTarget = Math.min(Math.max(leaky / 20.0, 0.0), 1.0);
-
-        state.pupilLeftSmoothNorm += PUPIL_SMOOTH_STEP * (leftTarget - state.pupilLeftSmoothNorm);
-        state.pupilRightSmoothNorm += PUPIL_SMOOTH_STEP * (rightTarget - state.pupilRightSmoothNorm);
+        var leftNorm = cv;
+        var rightNorm = Math.min(Math.max(leaky / 20.0, 0.0), 1.0);
 
         if (dom.inputMask) {
             var db = Math.min(Math.max(state.inputPendingDb, -90.0), 0.0);
@@ -85,15 +97,15 @@ function(event, funcs) {
 
         setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
         setCssVarIfChanged(dom.smileCurve, '--smile-t', cv, state, 'paintedSmileT');
-        setCssVarIfChanged(dom.pupilLeft, '--pupil-norm', state.pupilLeftSmoothNorm, state, 'paintedPupilLeft');
-        setCssVarIfChanged(dom.pupilRight, '--pupil-norm', state.pupilRightSmoothNorm, state, 'paintedPupilRight');
+        setCssVarIfChanged(dom.pupilLeft, '--pupil-norm', leftNorm, state, 'paintedPupilLeft');
+        setCssVarIfChanged(dom.pupilRight, '--pupil-norm', rightNorm, state, 'paintedPupilRight');
+        paintOnsetLed(dom, state);
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
     }
 
-    function scheduleDisplayPaint() {
-        var state = getState(true);
+    function scheduleDisplayPaint(state) {
         var now = Date.now();
         var elapsed = now - state.displayLastPaintMs;
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
@@ -109,6 +121,7 @@ function(event, funcs) {
         state.paintedSmileT = null;
         state.paintedPupilLeft = null;
         state.paintedPupilRight = null;
+        state.paintedOnsetActive = null;
     }
 
     function resetFaceCss(dom) {
@@ -159,22 +172,15 @@ function(event, funcs) {
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
         state.leakyOnsetPendingValue = 0.0;
+        state.onsetIndicatorPending = false;
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
-        state.pupilLeftSmoothNorm = 0.0;
-        state.pupilRightSmoothNorm = 0.0;
         resetPaintedState(state);
         resetFaceCss(dom);
 
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
         }
-        return;
-    }
-
-    var state = getState(true);
-    var dom = bindDom(state);
-    if (!hasRenderableUi(dom)) {
         return;
     }
 
@@ -185,27 +191,41 @@ function(event, funcs) {
         return;
     }
 
+    var state = getState(true);
+
     if (symbol === 'input_level_db') {
+        if (Math.abs(state.inputPendingDb - numericValue) < INPUT_DB_EPSILON) {
+            return;
+        }
         state.inputPendingDb = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'cv_out_meter') {
+        if (Math.abs(state.cvPendingValue - numericValue) < PAINT_EPSILON) {
+            return;
+        }
         state.cvPendingValue = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'leaky_onset_meter') {
+        if (Math.abs(state.leakyOnsetPendingValue - numericValue) < LEAKY_EPSILON) {
+            return;
+        }
         state.leakyOnsetPendingValue = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'onset_indicator') {
-        if (dom.onsetLed) {
-            dom.onsetLed.classList.toggle('active', numericValue > 0.5);
+        var onsetActive = numericValue > 0.5;
+        if (state.onsetIndicatorPending === onsetActive) {
+            return;
         }
+        state.onsetIndicatorPending = onsetActive;
+        scheduleDisplayPaint(state);
     }
 }

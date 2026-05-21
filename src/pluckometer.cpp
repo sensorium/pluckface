@@ -78,6 +78,7 @@ static const float kCvTriggerLow = 0.0f;
 static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.12f;
 static const float kCvParamRampSeconds = 0.01f;
+static const float kGuiMeterHz = 10.0f;
 
 
 typedef struct
@@ -124,7 +125,33 @@ typedef struct
   uint32_t trigger_samples_remaining;
   uint32_t trigger_duration_samples;
   float input_level_db_lp;
+  uint32_t gui_meter_interval_samples;
+  uint32_t gui_meter_sample_counter;
+  float gui_cv_out_meter_value;
+  uint8_t gui_onset_indicator_latch;
 } Pluckometer;
+
+static void
+publish_gui_meters(Pluckometer *self)
+{
+  if (self->input_level_db)
+  {
+    *self->input_level_db = self->input_level_db_lp;
+  }
+  if (self->cv_out_meter)
+  {
+    *self->cv_out_meter = self->gui_cv_out_meter_value;
+  }
+  if (self->leaky_onset_meter)
+  {
+    *self->leaky_onset_meter = std::min(20.0f, self->leaky_onset_level);
+  }
+  if (self->onset_indicator)
+  {
+    *self->onset_indicator = self->gui_onset_indicator_latch ? 1.0f : 0.0f;
+  }
+  self->gui_onset_indicator_latch = 0;
+}
 
 static LV2_Handle
 instantiate(const LV2_Descriptor *descriptor,
@@ -196,6 +223,10 @@ instantiate(const LV2_Descriptor *descriptor,
   self->trigger_samples_remaining = 0;
   self->trigger_duration_samples = std::max(1u, (uint32_t)floorf(self->samplerate * kCvTriggerDurationSeconds));
   self->input_level_db_lp = -90.0f;
+  self->gui_meter_interval_samples = std::max(1u, (uint32_t)(self->samplerate / kGuiMeterHz + 0.5f));
+  self->gui_meter_sample_counter = 0;
+  self->gui_cv_out_meter_value = 0.0f;
+  self->gui_onset_indicator_latch = 0;
   return (LV2_Handle)self;
 }
 
@@ -264,7 +295,14 @@ connect_port(LV2_Handle instance,
 static void
 activate(LV2_Handle instance)
 {
-  (void)instance;
+  Pluckometer *self = (Pluckometer *)instance;
+  if (!self)
+  {
+    return;
+  }
+  self->gui_meter_sample_counter = 0;
+  self->gui_onset_indicator_latch = 0;
+  publish_gui_meters(self);
 }
 
 static void
@@ -371,10 +409,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float tau = (clamped_db > self->input_level_db_lp) ? attack_seconds : release_seconds;
     const float coeff = expf(-block_seconds / tau);
     self->input_level_db_lp = coeff * self->input_level_db_lp + (1.0f - coeff) * clamped_db;
-    if (self->input_level_db)
-    {
-      *self->input_level_db = self->input_level_db_lp;
-    }
   }
 
   // Determine current window size in cells
@@ -419,9 +453,9 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->onsets_detected[self->window_index] = current_onset;
     self->window_index = (self->window_index + 1) % window_cells;
 
-    if (current_onset && self->onset_indicator)
+    if (current_onset)
     {
-      *self->onset_indicator = 1.0f;
+      self->gui_onset_indicator_latch = 1;
     }
 
     self->leaky_onset_level = leak * self->leaky_onset_level + (float)current_onset;
@@ -430,12 +464,6 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
     self->target_metric = onset_metric;
-  }
-
-  if (self->leaky_onset_meter)
-  {
-    // Output the raw leaky_onset_level, capped at 10.0 for reasonable metering range.
-    *self->leaky_onset_meter = std::min(20.0f, self->leaky_onset_level);
   }
 
   // Fill CV output for ALL samples in this block
@@ -448,12 +476,7 @@ run(LV2_Handle instance, uint32_t n_samples)
     // Calculate the "Normal" CV value based on metric, scale and offset
     float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
-
-    // The GUI meter always shows the un-inverted state for consistent calibration
-    if (self->cv_out_meter)
-    {
-      *self->cv_out_meter = cv_value;
-    }
+    self->gui_cv_out_meter_value = cv_value;
 
     self->cv_out[i] = cv_value;
     self->cv_inverted_out[i] = 1.0f - cv_value;
@@ -462,19 +485,19 @@ run(LV2_Handle instance, uint32_t n_samples)
     {
       self->cv_trigger_out[i] = kCvTriggerHigh;
       self->trigger_samples_remaining--;
-      if (self->onset_indicator)
-      {
-        *self->onset_indicator = 1.0f;
-      }
+      self->gui_onset_indicator_latch = 1;
     }
     else
     {
       self->cv_trigger_out[i] = kCvTriggerLow;
-      if (self->onset_indicator && i > 0)
-      {
-        *self->onset_indicator = 0.0f;
-      }
     }
+  }
+
+  self->gui_meter_sample_counter += n_samples;
+  if (self->gui_meter_sample_counter >= self->gui_meter_interval_samples)
+  {
+    publish_gui_meters(self);
+    self->gui_meter_sample_counter = 0;
   }
 }
 

@@ -2,19 +2,9 @@ function(event, funcs) {
     var INPUT_METER_HZ = 10;
     var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
     var UI_STATE_KEY = 'pluckometerUi';
-    var PUPIL_SMOOTH_STEP = 0.45;
-
-    var FACE_CONFIG = {
-        eyeCenterY: 35,
-        eyeCenterXLeft: 35,
-        eyeCenterXRight: 65,
-        eyeRadius: 10,
-        pupilRadius: 3,
-        smileBaselineY: 75,
-        smileXLeft: 20,
-        smileXRight: 80,
-        smileCenterX: 50
-    };
+    var PAINT_EPSILON = 0.001;
+    var INPUT_DB_EPSILON = 0.1;
+    var LEAKY_EPSILON = 0.05;
 
     var icon = event.icon;
 
@@ -25,10 +15,15 @@ function(event, funcs) {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
                 leakyOnsetPendingValue: 0.0,
+                onsetIndicatorPending: false,
                 displayLastPaintMs: 0,
                 displayTimer: null,
-                pupilLeftSmoothNorm: 0.0,
-                pupilRightSmoothNorm: 0.0
+                paintedInputNorm: null,
+                paintedCv: null,
+                paintedSmileT: null,
+                paintedPupilLeft: null,
+                paintedPupilRight: null,
+                paintedOnsetActive: null
             };
             icon.data(UI_STATE_KEY, state);
         }
@@ -44,6 +39,7 @@ function(event, funcs) {
             inputMeter: icon.find('.pluckometer-input-meter')[0],
             cvMeter: icon.find('.pluckometer-cv-meter')[0],
             onsetLed: icon.find('.pluckometer-onset-led')[0],
+            face: icon.find('.pluckometer-face')[0],
             smileCurve: icon.find('.pluckometer-smile-curve')[0],
             pupilLeft: icon.find('#pluckometer-pupil-left')[0],
             pupilRight: icon.find('#pluckometer-pupil-right')[0]
@@ -51,7 +47,7 @@ function(event, funcs) {
 
         dom.inputMask = dom.inputMeter ? dom.inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
         dom.cvMask = dom.cvMeter ? dom.cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
-        dom.hasFace = dom.smileCurve || (dom.pupilLeft && dom.pupilRight);
+        dom.hasFace = dom.face && dom.smileCurve && dom.pupilLeft && dom.pupilRight;
         state.dom = dom;
         return dom;
     }
@@ -60,31 +56,27 @@ function(event, funcs) {
         return dom.inputMask || dom.cvMask || dom.onsetLed || dom.hasFace;
     }
 
-    function paintSmile(dom, cv) {
-        if (!dom.smileCurve) return;
-        var t = cv;
-        var startY = FACE_CONFIG.smileBaselineY - (15 * t);
-        var controlY = FACE_CONFIG.smileBaselineY + (20 * t);
-        var d = 'M ' + FACE_CONFIG.smileXLeft + ' ' + startY + ' Q ' + FACE_CONFIG.smileCenterX + ' ' + controlY + ' ' + FACE_CONFIG.smileXRight + ' ' + startY;
-        dom.smileCurve.setAttribute('d', d);
-        dom.smileCurve.style.setProperty('--smile-t', t);
+    function setCssVarIfChanged(el, name, value, state, paintedKey) {
+        if (!el) return;
+        if (state[paintedKey] !== null && Math.abs(state[paintedKey] - value) < PAINT_EPSILON) {
+            return;
+        }
+        state[paintedKey] = value;
+        el.style.setProperty(name, value);
     }
 
-    function paintEyes(dom, state, cv_out_val, leaky_onset_val, snap) {
-        if (!dom.pupilLeft || !dom.pupilRight) return;
-
-        var leftTarget = Math.min(Math.max(cv_out_val, 0.0), 1.0);
-        var rightTarget = Math.min(Math.max(leaky_onset_val / 20.0, 0.0), 1.0);
-        var step = snap ? 1.0 : PUPIL_SMOOTH_STEP;
-
-        state.pupilLeftSmoothNorm += step * (leftTarget - state.pupilLeftSmoothNorm);
-        state.pupilRightSmoothNorm += step * (rightTarget - state.pupilRightSmoothNorm);
-
-        var range = FACE_CONFIG.eyeRadius - FACE_CONFIG.pupilRadius;
-        var restY = FACE_CONFIG.eyeCenterY + (FACE_CONFIG.eyeRadius / 2);
-
-        dom.pupilLeft.setAttribute('cy', restY - (state.pupilLeftSmoothNorm * range));
-        dom.pupilRight.setAttribute('cy', restY - (state.pupilRightSmoothNorm * range));
+    function paintOnsetLed(dom, state) {
+        if (!dom.onsetLed) return;
+        var active = state.onsetIndicatorPending;
+        if (state.paintedOnsetActive === active) {
+            return;
+        }
+        state.paintedOnsetActive = active;
+        if (active) {
+            dom.onsetLed.classList.add('active');
+        } else {
+            dom.onsetLed.classList.remove('active');
+        }
     }
 
     function flushDisplayPaint() {
@@ -92,33 +84,61 @@ function(event, funcs) {
         if (!state) return;
 
         var dom = bindDom(state);
+        var cv = Math.min(Math.max(state.cvPendingValue || 0.0, 0.0), 1.0);
+        var leaky = state.leakyOnsetPendingValue || 0.0;
+        var leftNorm = cv;
+        var rightNorm = Math.min(Math.max(leaky / 20.0, 0.0), 1.0);
 
         if (dom.inputMask) {
             var db = Math.min(Math.max(state.inputPendingDb, -90.0), 0.0);
             var inputNorm = (db + 90.0) / 90.0;
-            dom.inputMask.style.height = ((1 - inputNorm) * 100) + '%';
+            setCssVarIfChanged(dom.inputMask, '--meter-fill', inputNorm, state, 'paintedInputNorm');
         }
 
-        var cv = Math.min(Math.max(state.cvPendingValue || 0.0, 0.0), 1.0);
-        if (dom.cvMask) {
-            dom.cvMask.style.height = ((1 - cv) * 100) + '%';
-        }
-
-        paintSmile(dom, cv);
-        paintEyes(dom, state, cv, state.leakyOnsetPendingValue || 0.0, false);
+        setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
+        setCssVarIfChanged(dom.smileCurve, '--smile-t', cv, state, 'paintedSmileT');
+        setCssVarIfChanged(dom.pupilLeft, '--pupil-norm', leftNorm, state, 'paintedPupilLeft');
+        setCssVarIfChanged(dom.pupilRight, '--pupil-norm', rightNorm, state, 'paintedPupilRight');
+        paintOnsetLed(dom, state);
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
     }
 
-    function scheduleDisplayPaint() {
-        var state = getState(true);
+    function scheduleDisplayPaint(state) {
         var now = Date.now();
         var elapsed = now - state.displayLastPaintMs;
         if (elapsed >= INPUT_METER_INTERVAL_MS) {
             flushDisplayPaint();
         } else if (!state.displayTimer) {
             state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS - elapsed);
+        }
+    }
+
+    function resetPaintedState(state) {
+        state.paintedInputNorm = null;
+        state.paintedCv = null;
+        state.paintedSmileT = null;
+        state.paintedPupilLeft = null;
+        state.paintedPupilRight = null;
+        state.paintedOnsetActive = null;
+    }
+
+    function resetFaceCss(dom) {
+        if (dom.inputMask) {
+            dom.inputMask.style.setProperty('--meter-fill', '0');
+        }
+        if (dom.cvMask) {
+            dom.cvMask.style.setProperty('--meter-fill', '0');
+        }
+        if (dom.smileCurve) {
+            dom.smileCurve.style.setProperty('--smile-t', '0');
+        }
+        if (dom.pupilLeft) {
+            dom.pupilLeft.style.setProperty('--pupil-norm', '0');
+        }
+        if (dom.pupilRight) {
+            dom.pupilRight.style.setProperty('--pupil-norm', '0');
         }
     }
 
@@ -149,49 +169,18 @@ function(event, funcs) {
             autoSilenceSlider.addClass('pluckometer-hidden-control');
         }
 
-        var eyeSockets = icon.find('.pluckometer-eye-socket');
-        if (eyeSockets.length >= 2) {
-            eyeSockets[0].setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
-            eyeSockets[0].setAttribute('cy', FACE_CONFIG.eyeCenterY);
-            eyeSockets[0].setAttribute('r', FACE_CONFIG.eyeRadius);
-            eyeSockets[1].setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
-            eyeSockets[1].setAttribute('cy', FACE_CONFIG.eyeCenterY);
-            eyeSockets[1].setAttribute('r', FACE_CONFIG.eyeRadius);
-        }
-        if (dom.pupilLeft && dom.pupilRight) {
-            dom.pupilLeft.setAttribute('cx', FACE_CONFIG.eyeCenterXLeft);
-            dom.pupilLeft.setAttribute('r', FACE_CONFIG.pupilRadius);
-            dom.pupilRight.setAttribute('cx', FACE_CONFIG.eyeCenterXRight);
-            dom.pupilRight.setAttribute('r', FACE_CONFIG.pupilRadius);
-        }
-
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
         state.leakyOnsetPendingValue = 0.0;
+        state.onsetIndicatorPending = false;
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
-        state.pupilLeftSmoothNorm = 0.0;
-        state.pupilRightSmoothNorm = 0.0;
+        resetPaintedState(state);
+        resetFaceCss(dom);
 
-        if (dom.inputMask) {
-            dom.inputMask.style.height = '100%';
-        }
-        if (dom.cvMask) {
-            dom.cvMask.style.height = '100%';
-        }
-        if (dom.pupilLeft && dom.pupilRight) {
-            paintEyes(dom, state, 0.0, 0.0, true);
-        }
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
         }
-        paintSmile(dom, 0.0);
-        return;
-    }
-
-    var state = getState(true);
-    var dom = bindDom(state);
-    if (!hasRenderableUi(dom)) {
         return;
     }
 
@@ -202,27 +191,41 @@ function(event, funcs) {
         return;
     }
 
+    var state = getState(true);
+
     if (symbol === 'input_level_db') {
+        if (Math.abs(state.inputPendingDb - numericValue) < INPUT_DB_EPSILON) {
+            return;
+        }
         state.inputPendingDb = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'cv_out_meter') {
+        if (Math.abs(state.cvPendingValue - numericValue) < PAINT_EPSILON) {
+            return;
+        }
         state.cvPendingValue = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'leaky_onset_meter') {
+        if (Math.abs(state.leakyOnsetPendingValue - numericValue) < LEAKY_EPSILON) {
+            return;
+        }
         state.leakyOnsetPendingValue = numericValue;
-        scheduleDisplayPaint();
+        scheduleDisplayPaint(state);
         return;
     }
 
     if (symbol === 'onset_indicator') {
-        if (dom.onsetLed) {
-            dom.onsetLed.classList.toggle('active', numericValue > 0.5);
+        var onsetActive = numericValue > 0.5;
+        if (state.onsetIndicatorPending === onsetActive) {
+            return;
         }
+        state.onsetIndicatorPending = onsetActive;
+        scheduleDisplayPaint(state);
     }
 }

@@ -73,7 +73,6 @@
     height:90%;
     border-radius:50%;
     background:#00cf00;
-    box-shadow:0 0 10px #00ff00;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-eye {
@@ -148,7 +147,7 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
-    box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
+    /* box-shadow:inset 0 0 2px rgba(0,0,0,0.35); */
     overflow:hidden;
     padding:4px 3px;
     position:relative;
@@ -160,7 +159,6 @@
     left:0;
     position:absolute;
     top:0;
-    transition:height 60ms linear;
     width:100%;
 }
 
@@ -189,7 +187,7 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
-    box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
+    /* box-shadow:inset 0 0 2px rgba(0,0,0,0.35); */
     overflow:hidden;
     padding:4px 3px;
     position:relative;
@@ -201,7 +199,6 @@
     left:0;
     position:absolute;
     top:0;
-    transition:height 60ms linear;
     width:100%;
 }
 
@@ -443,7 +440,7 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter-bar {
     background:none;
     border-radius:0;
-    box-shadow:none;
+    /* box-shadow:none; */
     height:100%;
     padding:0;
 }
@@ -472,7 +469,7 @@
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-selected {
     background:rgba(10, 18, 16, 0.88);
     border-radius:6px;
-    box-shadow:none;
+    /* box-shadow:none; */
     color:#449291;
     outline:none;
     padding:3px 9px;
