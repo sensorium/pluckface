@@ -33,7 +33,8 @@ function(event, funcs) {
         var dom = {
             inputMeter: icon.find('.pluckometer-input-meter')[0],
             cvMeter: icon.find('.pluckometer-cv-meter')[0],
-            onsetLed: icon.find('.pluckometer-onset-led')[0]
+            onsetLed: icon.find('.pluckometer-onset-led')[0],
+            faceEyes: icon.find('.pluckometer-face-eyes')[0]
         };
 
         dom.inputMask = dom.inputMeter ? dom.inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
@@ -43,7 +44,7 @@ function(event, funcs) {
     }
 
     function hasRenderableUi(dom) {
-        return dom.inputMask || dom.cvMask || dom.onsetLed;
+        return dom.inputMask || dom.cvMask || dom.onsetLed || dom.faceEyes;
     }
 
     function setCssVarIfChanged(el, name, value, state, paintedKey) {
@@ -56,16 +57,25 @@ function(event, funcs) {
     }
 
     function paintOnsetLed(dom, state) {
-        if (!dom.onsetLed) return;
         var active = state.onsetIndicatorPending;
         if (state.paintedOnsetActive === active) {
             return;
         }
         state.paintedOnsetActive = active;
-        if (active) {
-            dom.onsetLed.classList.add('active');
-        } else {
-            dom.onsetLed.classList.remove('active');
+
+        if (dom.onsetLed) {
+            if (active) {
+                dom.onsetLed.classList.add('active');
+            } else {
+                dom.onsetLed.classList.remove('active');
+            }
+        }
+        if (dom.faceEyes) {
+            if (active) {
+                dom.faceEyes.classList.add('active');
+            } else {
+                dom.faceEyes.classList.remove('active');
+            }
         }
     }
 
@@ -151,6 +161,9 @@ function(event, funcs) {
 
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
+        }
+        if (dom.faceEyes) {
+            dom.faceEyes.classList.remove('active');
         }
         return;
     }

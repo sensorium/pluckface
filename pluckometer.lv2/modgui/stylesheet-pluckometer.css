@@ -18,6 +18,43 @@ proportion is 598/1216 = 0.491776315789474
     border-radius: 40px;
 }
 
+/* = FACE GRAPHIC
+================================================ */
+.mod-pedal-boxy{{{cns}}} .pluckometer-face {
+    background-image:url(/resources/pedals/pluck-face-clown-green-screen.png{{{ns}}});
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:contain;
+    left:158px;
+    pointer-events:none;
+    position:absolute;
+    top:43px;
+    z-index:10;
+    width:283px;
+    height:245px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-face-eyes {
+    background-image:url(/resources/pedals/pluck-face-clown-green-screen-eyes.png{{{ns}}});
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:contain;
+    left:59.5px;
+    top:77px;
+    position:absolute;
+    will-change: opacity;
+    opacity:0.15;
+    transition:opacity 150ms ease-out;
+    z-index:11;
+    pointer-events: none;
+    width: 165px;
+    height: 93px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-face-eyes.active {
+    opacity:1;
+}
+
 
 /* = PLUGIN'S NAME
 ================================================ */
@@ -40,13 +77,13 @@ proportion is 598/1216 = 0.491776315789474
 /* = LIGHT ON/OFF
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .mod-light {
-    background-position:center center;
+    /* background-position:center center; */
     background-repeat:no-repeat;
     height:32px;
-    left:10px;
+    left:40px;
     position:absolute;
-    right:10px;
-    top:147;
+    /* right:10px; */
+    top:147px;
 }
 
 
@@ -57,10 +94,10 @@ proportion is 598/1216 = 0.491776315789474
     box-sizing:border-box;
     border-radius:3px;
     overflow:hidden;
-    padding:2px;
+    /* padding:2px; */
     position:absolute;
     left:88px;
-    top:162px;
+    top:167px;
     width:14px;
     height:117px;
     z-index:65;
