@@ -80,6 +80,13 @@ static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.12f;
 static const float kCvParamRampSeconds = 0.01f;
 static const float kGuiMeterHz = 10.0f;
+// Number of quantisation steps for cv_out and cv_inverted_out.
+// Limits the number of distinct values written to the CV buffers, which
+// directly controls how often mod-host fires a param_set feedback message
+// when these ports are assigned to other plugins' parameters via CV addressing.
+// 256 steps gives a resolution of ~0.004 across [0,1] — far finer than any
+// parameter a user would notice, while dramatically reducing GUI feedback traffic.
+static const float kCvOutSteps = 255.0f; // 256 levels: 0/255, 1/255 … 255/255
 
 
 typedef struct
@@ -409,7 +416,12 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self->ringbuf->Write((unsigned char *)&input[i], sizeof(smpl_t)) < (int)sizeof(smpl_t))
     {
       self->overruns++;
-      lv2_log_trace(&self->logger, "overrun on ringbuf: %d\n", self->overruns);
+      // Rate-limit to avoid adding overhead under the exact conditions
+      // (buffer pressure) where logging hurts most.
+      if (self->overruns == 1 || (self->overruns % (uint32_t)self->samplerate) == 0)
+      {
+        lv2_log_trace(&self->logger, "overrun on ringbuf: %d\n", self->overruns);
+      }
     }
   }
 
@@ -495,8 +507,17 @@ run(LV2_Handle instance, uint32_t n_samples)
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
     self->gui_cv_out_meter_value = cv_value;
 
-    self->cv_out[i] = cv_value;
-    self->cv_inverted_out[i] = 1.0f - cv_value;
+    // Quantize to kCvOutSteps discrete levels before writing to the CV
+    // output buffers.  mod-host samples the last value in the buffer each
+    // JACK period and fires a GUI feedback message whenever it changes.
+    // Without quantisation, the EMA produces a slightly different float
+    // every cycle, generating maximum feedback traffic (~375 msg/s at
+    // 48 kHz/128 samples).  With 256 steps the value only changes when
+    // the signal meaningfully moves, cutting feedback to well under 10/s
+    // during typical slow-moving onset-rate output.
+    const float cv_quantized = roundf(cv_value * kCvOutSteps) / kCvOutSteps;
+    self->cv_out[i] = cv_quantized;
+    self->cv_inverted_out[i] = 1.0f - cv_quantized;
 
     if (self->trigger_samples_remaining > 0)
     {
