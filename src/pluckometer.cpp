@@ -397,6 +397,12 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->input_level_db_lp = coeff * self->input_level_db_lp + (1.0f - coeff) * clamped_db;
   }
 
+  const int method_index = std::max(0, std::min(NUM_ONSET_METHODS - 1, (int)*self->onset_method));
+  const float onset_sensitivity = std::max(kOnsetSensitivityMin, std::min(kOnsetSensitivityMax, *self->onset_sensitivity));
+  const float aubio_onset_threshold = powf(10.0f, -onset_sensitivity);
+  aubio_onset_set_silence(self->onsets[method_index], (float)*self->silence_threshold);
+  aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
+
   // Determine current window size in cells
   int16_t window_cells = (int16_t)floorf(std::min((float)WINDOW_SECONDS_MAX, *self->window_seconds) * self->samplerate / self->hopsize);
   if (window_cells < 1) window_cells = 1;
@@ -412,11 +418,6 @@ run(LV2_Handle instance, uint32_t n_samples)
   while (self->ringbuf->GetReadAvail() >= sizeof(smpl_t) * self->hopsize)
   {
     self->ringbuf->Read((unsigned char *)self->ab_in->data, sizeof(smpl_t) * self->hopsize);
-    const int method_index = std::max(0, std::min(NUM_ONSET_METHODS - 1, (int)*self->onset_method));
-    const float onset_sensitivity = std::max(kOnsetSensitivityMin, std::min(kOnsetSensitivityMax, *self->onset_sensitivity));
-    const float aubio_onset_threshold = powf(10.0f, -onset_sensitivity);
-    aubio_onset_set_silence(self->onsets[method_index], (float)*self->silence_threshold);
-    aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
     aubio_onset_do(self->onsets[method_index], self->ab_in, self->onset);
 
     self->curlevel = aubio_level_detection(self->ab_in, *self->silence_threshold);
