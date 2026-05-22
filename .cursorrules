@@ -6,13 +6,6 @@
 - **MOD UI**: JavaScript must remain ES5 compatible (use `var` instead of `const`/`let`).
 - **LV2 Audio**: C code should follow the Aubio-style memory management (explicit `new_` and `del_` functions).
 
-## UI & Graphics (SVG)
-- **Coordinate System**: All face-related SVG elements (Eyes, Smile) use a **100x100 viewBox**.
-- **Face Geometry**:
-  - Eye Center Y: 35
-  - Eye Radius: 8
-  - Pupil Radius: 3
-  - Smile Baseline Y: 75
 
 ## Data Normalization & Metering
 - **Throttling**: UI updates for meters must be throttled to 10Hz (approx 100ms) using the `INPUT_METER_INTERVAL_MS` pattern.
