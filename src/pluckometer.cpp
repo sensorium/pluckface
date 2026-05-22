@@ -79,6 +79,11 @@ static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.12f;
 static const float kCvParamRampSeconds = 0.01f;
 static const float kGuiMeterHz = 10.0f;
+// Maximum rate at which cv_out and cv_inverted_out are updated.
+// The EMA and param ramp are computed once per throttle tick and the
+// resulting value held constant for the rest of the block, eliminating
+// per-sample DSP work and giving mod-host a stable value to sample.
+static const float kCvThrottleHz = 100.0f;
 // Number of quantisation steps for cv_out and cv_inverted_out.
 // Limits the number of distinct values written to the CV buffers, which
 // directly controls how often mod-host fires a param_set feedback message
@@ -141,6 +146,19 @@ typedef struct
   float last_silence_threshold;
   float last_aubio_threshold;
   int   last_method_index;
+  // CV output throttle — EMA and quantisation computed once per tick,
+  // held constant across the block. Eliminates per-sample DSP work and
+  // gives mod-host a stable buffer value to sample for CV addressing.
+  uint32_t throttle_counter;
+  uint32_t throttle_interval_samples;
+  float    held_cv_out;
+  float    held_cv_inverted_out;
+  // param_alpha is constant (depends only on fixed constants and samplerate),
+  // computed once at instantiate. cached_alpha is recomputed only when the
+  // cv_smoothing knob moves.
+  float param_alpha;
+  float cached_alpha;
+  float last_cv_smoothing;
 } Pluckometer;
 
 static void
@@ -255,6 +273,18 @@ instantiate(const LV2_Descriptor *descriptor,
   self->last_silence_threshold = -999.0f; // Force first aubio setter call
   self->last_aubio_threshold   = -999.0f;
   self->last_method_index      = -1;
+  self->throttle_interval_samples = std::max(1u, (uint32_t)(self->samplerate / kCvThrottleHz + 0.5f));
+  self->throttle_counter          = 0;
+  self->held_cv_out               = 0.0f;
+  self->held_cv_inverted_out      = 1.0f;
+  // param_alpha: depends only on compile-time constants and samplerate, so
+  // compute once here rather than every run() call.
+  self->param_alpha = 1.0f - expf(-(float)self->throttle_interval_samples /
+                                   (kCvParamRampSeconds * self->samplerate));
+  // cached_alpha and last_cv_smoothing: seed with an impossible value so the
+  // first run() call always computes and caches a real alpha.
+  self->cached_alpha      = 1.0f;
+  self->last_cv_smoothing = -1.0f;
   return (LV2_Handle)self;
 }
 
@@ -327,6 +357,7 @@ activate(LV2_Handle instance)
   }
   self->gui_meter_sample_counter = 0;
   self->gui_onset_indicator_latch = 0;
+  self->throttle_counter = 0;
   self->last_published_cv_meter = -1.0f;
   self->last_published_input_db = -999.0f;
   self->last_published_onset_indicator = -1.0f;
@@ -381,19 +412,26 @@ run(LV2_Handle instance, uint32_t n_samples)
 
   const float *input = self->input;
 
-  // Map smoothing control to an exponential time constant so the full range
-  // is useful and perceptually smoother. 0 = effectively bypassed smoothing.
+  // Recompute alpha only when cv_smoothing has actually changed — the powf
+  // and expf calls are expensive and the knob moves rarely.
   const float cv_smoothing = std::max(0.0f, std::min(1.0f, *self->cv_smoothing));
-  float alpha = 1.0f;
-  if (cv_smoothing > 0.0f)
+  if (cv_smoothing != self->last_cv_smoothing)
   {
-    const float min_smoothing_seconds = 0.05f;
-    const float max_smoothing_seconds = 1.0f;
-    const float smoothing_seconds = min_smoothing_seconds *
-                                    powf(max_smoothing_seconds / min_smoothing_seconds, cv_smoothing);
-    alpha = 1.0f - expf(-1.0f / (smoothing_seconds * self->samplerate));
-    alpha = std::max(0.000001f, std::min(1.0f, alpha));
+    float alpha = 1.0f;
+    if (cv_smoothing > 0.0f)
+    {
+      const float min_smoothing_seconds = 0.05f;
+      const float max_smoothing_seconds = 1.0f;
+      const float smoothing_seconds = min_smoothing_seconds *
+                                      powf(max_smoothing_seconds / min_smoothing_seconds, cv_smoothing);
+      alpha = 1.0f - expf(-(float)self->throttle_interval_samples / (smoothing_seconds * self->samplerate));
+      alpha = std::max(0.000001f, std::min(1.0f, alpha));
+    }
+    self->cached_alpha      = alpha;
+    self->last_cv_smoothing = cv_smoothing;
   }
+  const float alpha       = self->cached_alpha;
+  const float param_alpha = self->param_alpha;
   const float cv_out_min = 0.0f;
   const float cv_out_max = 1.0f;
 
@@ -405,7 +443,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->ramped_offset = offset_target;
     self->cv_params_initialized = true;
   }
-  const float param_alpha = 1.0f - expf(-1.0f / (kCvParamRampSeconds * self->samplerate));
 
   // Fill the ring buffer and estimate input level for metering.
   double sum_squares = 0.0;
@@ -506,28 +543,34 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->target_metric = onset_metric;
   }
 
-  // Fill CV output for ALL samples in this block
-  for (uint32_t i = 0; i < n_samples; i++)
+  // Update the CV held value at kCvThrottleHz (100 Hz). The EMA and param
+  // ramp advance by throttle_interval_samples worth of time in one step,
+  // then the resulting quantised value is held for the rest of the block.
+  // This eliminates per-sample DSP work and ensures mod-host always reads
+  // the same value within a JACK period, keeping GUI feedback traffic low.
+  self->throttle_counter += n_samples;
+  if (self->throttle_counter >= self->throttle_interval_samples)
   {
-    self->metric_lp = alpha * self->target_metric + (1.0f - alpha) * self->metric_lp;
-    self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
-    self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
+    self->throttle_counter = 0;
 
-    // Calculate the "Normal" CV value based on metric, scale and offset
+    self->metric_lp    += alpha       * (self->target_metric - self->metric_lp);
+    self->ramped_scale += param_alpha * (scale_target        - self->ramped_scale);
+    self->ramped_offset+= param_alpha * (offset_target       - self->ramped_offset);
+
     float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
+    self->gui_cv_out_meter_value = cv_value; // unquantised, for the display meter
 
-    // Quantize to kCvOutSteps discrete levels before writing to the CV
-    // output buffers.  mod-host samples the last value in the buffer each
-    // JACK period and fires a GUI feedback message whenever it changes.
-    // Without quantisation, the EMA produces a slightly different float
-    // every cycle, generating maximum feedback traffic (~375 msg/s at
-    // 48 kHz/128 samples).  With 256 steps the value only changes when
-    // the signal meaningfully moves, cutting feedback to well under 10/s
-    // during typical slow-moving onset-rate output.
-    const float cv_quantized = roundf(cv_value * kCvOutSteps) / kCvOutSteps;
-    self->cv_out[i] = cv_quantized;
-    self->cv_inverted_out[i] = 1.0f - cv_quantized;
+    const float cv_quantized      = roundf(cv_value * kCvOutSteps) / kCvOutSteps;
+    self->held_cv_out          = cv_quantized;
+    self->held_cv_inverted_out = 1.0f - cv_quantized;
+  }
+
+  // Fill the block with the held CV values and handle trigger output.
+  for (uint32_t i = 0; i < n_samples; i++)
+  {
+    self->cv_out[i]          = self->held_cv_out;
+    self->cv_inverted_out[i] = self->held_cv_inverted_out;
 
     if (self->trigger_samples_remaining > 0)
     {
@@ -540,10 +583,6 @@ run(LV2_Handle instance, uint32_t n_samples)
       self->cv_trigger_out[i] = kCvTriggerLow;
     }
   }
-  // Record the last block's final cv_value for the GUI meter.
-  // publish_gui_meters() only reads this at 10 Hz so only the end-of-block
-  // value is needed — no point updating it inside the sample loop.
-  self->gui_cv_out_meter_value = self->cv_out[n_samples - 1];
 
   self->gui_meter_sample_counter += n_samples;
   if (self->gui_meter_sample_counter >= self->gui_meter_interval_samples)
