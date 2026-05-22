@@ -16,7 +16,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,7 +98,6 @@ typedef struct
   smpl_t bufsize;
   smpl_t hopsize;
   uint_t overruns;
-  smpl_t curlevel;
   fvec_t *ab_in;
   fvec_t *onset;
   smpl_t samplerate;
@@ -122,7 +120,6 @@ typedef struct
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
-  int16_t previous_total;
   float leaky_onset_level;
   float metric_lp;
   float target_metric;
@@ -139,6 +136,11 @@ typedef struct
   float last_published_cv_meter;
   uint8_t gui_onset_indicator_latch;
   float last_published_onset_indicator;
+  // Cached aubio setter values — only call setters when these change,
+  // avoiding unnecessary work in the DSP thread every run() call.
+  float last_silence_threshold;
+  float last_aubio_threshold;
+  int   last_method_index;
 } Pluckometer;
 
 static void
@@ -193,10 +195,6 @@ instantiate(const LV2_Descriptor *descriptor,
     return NULL;
   }
 
-  self->map = NULL;
-  self->log = NULL;
-  self->onsets_detected = NULL;
-  self->overruns = 0;
   self->ringbuf = new RingBuffer(RB_SIZE * sizeof(smpl_t));
   for (int i = 0; features[i]; ++i)
   {
@@ -238,7 +236,6 @@ instantiate(const LV2_Descriptor *descriptor,
   memset(self->onsets_detected, 0, size_detected * sizeof(int8_t));
   self->window_index = 0;
   self->onsets_total = 0;
-  self->previous_total = -1;
   self->leaky_onset_level = 0.0f;
   self->metric_lp = 0.0f;
   self->target_metric = 0.0f;
@@ -255,6 +252,9 @@ instantiate(const LV2_Descriptor *descriptor,
   self->last_published_cv_meter = -1.0f; // Force first update
   self->gui_onset_indicator_latch = 0;
   self->last_published_onset_indicator = -1.0f; // Force first update
+  self->last_silence_threshold = -999.0f; // Force first aubio setter call
+  self->last_aubio_threshold   = -999.0f;
+  self->last_method_index      = -1;
   return (LV2_Handle)self;
 }
 
@@ -442,8 +442,20 @@ run(LV2_Handle instance, uint32_t n_samples)
   const int method_index = std::max(0, std::min(NUM_ONSET_METHODS - 1, (int)*self->onset_method));
   const float onset_sensitivity = std::max(kOnsetSensitivityMin, std::min(kOnsetSensitivityMax, *self->onset_sensitivity));
   const float aubio_onset_threshold = powf(10.0f, -onset_sensitivity);
-  aubio_onset_set_silence(self->onsets[method_index], (float)*self->silence_threshold);
-  aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
+  // Only call aubio setters when the values have actually changed — these
+  // are called unconditionally each run() otherwise, wasting DSP cycles.
+  const float silence_threshold = (float)*self->silence_threshold;
+  if (silence_threshold != self->last_silence_threshold || method_index != self->last_method_index)
+  {
+    aubio_onset_set_silence(self->onsets[method_index], silence_threshold);
+    self->last_silence_threshold = silence_threshold;
+  }
+  if (aubio_onset_threshold != self->last_aubio_threshold || method_index != self->last_method_index)
+  {
+    aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
+    self->last_aubio_threshold = aubio_onset_threshold;
+  }
+  self->last_method_index = method_index;
 
   // Determine current window size in cells
   int16_t window_cells = (int16_t)floorf(std::min((float)WINDOW_SECONDS_MAX, *self->window_seconds) * self->samplerate / self->hopsize);
@@ -462,11 +474,12 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->ringbuf->Read((unsigned char *)self->ab_in->data, sizeof(smpl_t) * self->hopsize);
     aubio_onset_do(self->onsets[method_index], self->ab_in, self->onset);
 
-    self->curlevel = aubio_level_detection(self->ab_in, *self->silence_threshold);
+    // curlevel is local: it's only meaningful within this hop iteration.
+    const smpl_t curlevel = aubio_level_detection(self->ab_in, *self->silence_threshold);
     int8_t current_onset = 0;
     if (fvec_get_sample(self->onset, 0)) // Onset detected
     {
-      if (self->curlevel != 1.0f)
+      if (curlevel != 1.0f)
       {
         current_onset = 1;
         self->trigger_samples_remaining = self->trigger_duration_samples;
@@ -489,8 +502,6 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     self->leaky_onset_level = leak * self->leaky_onset_level + (float)current_onset;
 
-    self->previous_total = self->onsets_total;
-
     const float onset_metric = (1.0f - leaky_mix) * self->onsets_total + leaky_mix * self->leaky_onset_level;
     self->target_metric = onset_metric;
   }
@@ -505,7 +516,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     // Calculate the "Normal" CV value based on metric, scale and offset
     float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
-    self->gui_cv_out_meter_value = cv_value;
 
     // Quantize to kCvOutSteps discrete levels before writing to the CV
     // output buffers.  mod-host samples the last value in the buffer each
@@ -530,6 +540,10 @@ run(LV2_Handle instance, uint32_t n_samples)
       self->cv_trigger_out[i] = kCvTriggerLow;
     }
   }
+  // Record the last block's final cv_value for the GUI meter.
+  // publish_gui_meters() only reads this at 10 Hz so only the end-of-block
+  // value is needed — no point updating it inside the sample loop.
+  self->gui_cv_out_meter_value = self->cv_out[n_samples - 1];
 
   self->gui_meter_sample_counter += n_samples;
   if (self->gui_meter_sample_counter >= self->gui_meter_interval_samples)
