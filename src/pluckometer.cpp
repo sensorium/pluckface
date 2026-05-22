@@ -1,4 +1,6 @@
 /*
+  Copyright 2026 Tim Barrass https://github.com/sensorium
+  Pluckometer was hacked based on the Aubio Harmonizer LV2 plugin by Daniel Sheeler https://github.com/dsheeler/harmonizer.lv2
   Copyright 2017 Daniel Sheeler <dsheeler@pobox.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -123,10 +125,13 @@ typedef struct
   uint32_t trigger_samples_remaining;
   uint32_t trigger_duration_samples;
   float input_level_db_lp;
+  float last_published_input_db;
   uint32_t gui_meter_interval_samples;
   uint32_t gui_meter_sample_counter;
   float gui_cv_out_meter_value;
+  float last_published_cv_meter;
   uint8_t gui_onset_indicator_latch;
+  float last_published_onset_indicator;
 } Pluckometer;
 
 static void
@@ -134,15 +139,34 @@ publish_gui_meters(Pluckometer *self)
 {
   if (self->input_level_db)
   {
-    *self->input_level_db = self->input_level_db_lp;
+    const float norm = (self->input_level_db_lp + 90.0f) / 90.0f;
+    const float steps = 13.0f; // Quantize to 14 levels (0 to 13)
+    const float quantized_norm = floorf(norm * steps + 0.5f) / steps;
+    const float quantized_db = (quantized_norm * 90.0f) - 90.0f;
+    if (quantized_db != self->last_published_input_db)
+    {
+      *self->input_level_db = quantized_db;
+      self->last_published_input_db = quantized_db;
+    }
   }
   if (self->cv_out_meter)
   {
-    *self->cv_out_meter = self->gui_cv_out_meter_value;
+    const float steps = 19.0f; // Quantize to 20 levels (0 to 19)
+    const float quantized = floorf(self->gui_cv_out_meter_value * steps + 0.5f) / steps;
+    if (quantized != self->last_published_cv_meter)
+    {
+      *self->cv_out_meter = quantized;
+      self->last_published_cv_meter = quantized;
+    }
   }
   if (self->onset_indicator)
   {
-    *self->onset_indicator = self->gui_onset_indicator_latch ? 1.0f : 0.0f;
+    const float current_val = self->gui_onset_indicator_latch ? 1.0f : 0.0f;
+    if (current_val != self->last_published_onset_indicator)
+    {
+      *self->onset_indicator = current_val;
+      self->last_published_onset_indicator = current_val;
+    }
   }
   self->gui_onset_indicator_latch = 0;
 }
@@ -217,10 +241,13 @@ instantiate(const LV2_Descriptor *descriptor,
   self->trigger_samples_remaining = 0;
   self->trigger_duration_samples = std::max(1u, (uint32_t)floorf(self->samplerate * kCvTriggerDurationSeconds));
   self->input_level_db_lp = -90.0f;
+  self->last_published_input_db = -999.0f; // Force first update
   self->gui_meter_interval_samples = std::max(1u, (uint32_t)(self->samplerate / kGuiMeterHz + 0.5f));
   self->gui_meter_sample_counter = 0;
   self->gui_cv_out_meter_value = 0.0f;
+  self->last_published_cv_meter = -1.0f; // Force first update
   self->gui_onset_indicator_latch = 0;
+  self->last_published_onset_indicator = -1.0f; // Force first update
   return (LV2_Handle)self;
 }
 
@@ -293,6 +320,9 @@ activate(LV2_Handle instance)
   }
   self->gui_meter_sample_counter = 0;
   self->gui_onset_indicator_latch = 0;
+  self->last_published_cv_meter = -1.0f;
+  self->last_published_input_db = -999.0f;
+  self->last_published_onset_indicator = -1.0f;
   publish_gui_meters(self);
 }
 
