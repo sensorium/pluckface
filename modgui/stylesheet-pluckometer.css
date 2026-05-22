@@ -75,12 +75,15 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
-    /* box-shadow:inset 0 0 2px rgba(0,0,0,0.35); */
     overflow:hidden;
     padding:4px 3px;
     position:relative;
 }
 
+
+/* The height of the black mask is controlled by --meter-fill 
+When --meter-fill is 1.0 (0dB), height is 0% (mask is gone)
+When --meter-fill is 0.0 (-90dB), height is 100% (meter is covered) */
 .mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-mask {
     background:rgba(0,0,0,0.85);
     height:calc((1 - var(--meter-fill, 0)) * 100%);
@@ -88,7 +91,9 @@
     position:absolute;
     top:0;
     width:100%;
+    pointer-events: none;
 }
+
 
 
 /* = CV METER
@@ -115,7 +120,6 @@
 .mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
-    /* box-shadow:inset 0 0 2px rgba(0,0,0,0.35); */
     overflow:hidden;
     padding:4px 3px;
     position:relative;
@@ -128,6 +132,7 @@
     position:absolute;
     top:0;
     width:100%;
+    pointer-events: none;
 }
 
 
