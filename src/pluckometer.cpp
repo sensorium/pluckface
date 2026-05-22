@@ -56,9 +56,8 @@ typedef enum
   PLUCKOMETER_CV_TRIGGER_OUT = 11,
   PLUCKOMETER_INPUT = 12,
   PLUCKOMETER_INPUT_LEVEL_DB = 13,
-   PLUCKOMETER_CV_OUT_METER = 14,
-   PLUCKOMETER_ONSET_INDICATOR = 15,
-   PLUCKOMETER_LEAKY_ONSET_METER = 16 // New port for leaky integrator level
+  PLUCKOMETER_CV_OUT_METER = 14,
+  PLUCKOMETER_ONSET_INDICATOR = 15
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -111,7 +110,6 @@ typedef struct
   float *input_level_db;
   float *cv_out_meter;
   float *onset_indicator;
-  float *leaky_onset_meter; // New member for the leaky onset meter
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -141,10 +139,6 @@ publish_gui_meters(Pluckometer *self)
   if (self->cv_out_meter)
   {
     *self->cv_out_meter = self->gui_cv_out_meter_value;
-  }
-  if (self->leaky_onset_meter)
-  {
-    *self->leaky_onset_meter = std::min(20.0f, self->leaky_onset_level);
   }
   if (self->onset_indicator)
   {
@@ -286,9 +280,6 @@ connect_port(LV2_Handle instance,
   case PLUCKOMETER_ONSET_INDICATOR:
     self->onset_indicator = (float *)data;
     break;
-  case PLUCKOMETER_LEAKY_ONSET_METER: // Connect the new port
-    self->leaky_onset_meter = (float *)data;
-    break;
   }
 }
 
@@ -322,8 +313,7 @@ run(LV2_Handle instance, uint32_t n_samples)
       !self->cv_inverted_out ||
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
-      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
-      !self->leaky_onset_meter) // Add new meter to the guard check
+      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing)
   {
     if (self && self->cv_out)
     {
@@ -348,10 +338,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     if (self && self->onset_indicator)
     {
       *self->onset_indicator = 0.0f;
-    }
-    if (self && self->leaky_onset_meter) // Initialize new meter
-    {
-      *self->leaky_onset_meter = 0.0f;
     }
     return;
   }

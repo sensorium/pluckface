@@ -139,19 +139,6 @@
   top:120px;
 }
 
-/* = SMILE CURVE
-================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-smile {
-    position:absolute;
-    left:50%;
-    top:208px;
-    transform:translateX(-50%);
-    width:120px;
-    height:60px;
-    pointer-events:none;
-    z-index:60;
-}
-
 /* = INPUT LEVEL METER
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .pluckometer-input-meter {

@@ -4,7 +4,6 @@ function(event, funcs) {
     var UI_STATE_KEY = 'pluckometerUi';
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
-    var LEAKY_EPSILON = 0.05;
 
     var icon = event.icon;
 
@@ -14,15 +13,11 @@ function(event, funcs) {
             state = {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
-                leakyOnsetPendingValue: 0.0,
                 onsetIndicatorPending: false,
                 displayLastPaintMs: 0,
                 displayTimer: null,
                 paintedInputNorm: null,
                 paintedCv: null,
-                paintedSmileT: null,
-                paintedPupilLeft: null,
-                paintedPupilRight: null,
                 paintedOnsetActive: null
             };
             icon.data(UI_STATE_KEY, state);
@@ -38,22 +33,17 @@ function(event, funcs) {
         var dom = {
             inputMeter: icon.find('.pluckometer-input-meter')[0],
             cvMeter: icon.find('.pluckometer-cv-meter')[0],
-            onsetLed: icon.find('.pluckometer-onset-led')[0],
-            face: icon.find('.pluckometer-face')[0],
-            smileCurve: icon.find('.pluckometer-smile-curve')[0],
-            pupilLeft: icon.find('#pluckometer-pupil-left')[0],
-            pupilRight: icon.find('#pluckometer-pupil-right')[0]
+            onsetLed: icon.find('.pluckometer-onset-led')[0]
         };
 
         dom.inputMask = dom.inputMeter ? dom.inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
         dom.cvMask = dom.cvMeter ? dom.cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
-        dom.hasFace = dom.face && dom.smileCurve && dom.pupilLeft && dom.pupilRight;
         state.dom = dom;
         return dom;
     }
 
     function hasRenderableUi(dom) {
-        return dom.inputMask || dom.cvMask || dom.onsetLed || dom.hasFace;
+        return dom.inputMask || dom.cvMask || dom.onsetLed;
     }
 
     function setCssVarIfChanged(el, name, value, state, paintedKey) {
@@ -85,9 +75,6 @@ function(event, funcs) {
 
         var dom = bindDom(state);
         var cv = Math.min(Math.max(state.cvPendingValue || 0.0, 0.0), 1.0);
-        var leaky = state.leakyOnsetPendingValue || 0.0;
-        var leftNorm = cv;
-        var rightNorm = Math.min(Math.max(leaky / 20.0, 0.0), 1.0);
 
         if (dom.inputMask) {
             var db = Math.min(Math.max(state.inputPendingDb, -90.0), 0.0);
@@ -96,9 +83,6 @@ function(event, funcs) {
         }
 
         setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
-        setCssVarIfChanged(dom.smileCurve, '--smile-t', cv, state, 'paintedSmileT');
-        setCssVarIfChanged(dom.pupilLeft, '--pupil-norm', leftNorm, state, 'paintedPupilLeft');
-        setCssVarIfChanged(dom.pupilRight, '--pupil-norm', rightNorm, state, 'paintedPupilRight');
         paintOnsetLed(dom, state);
 
         state.displayLastPaintMs = Date.now();
@@ -118,27 +102,15 @@ function(event, funcs) {
     function resetPaintedState(state) {
         state.paintedInputNorm = null;
         state.paintedCv = null;
-        state.paintedSmileT = null;
-        state.paintedPupilLeft = null;
-        state.paintedPupilRight = null;
         state.paintedOnsetActive = null;
     }
 
-    function resetFaceCss(dom) {
+    function resetMeterCss(dom) {
         if (dom.inputMask) {
             dom.inputMask.style.setProperty('--meter-fill', '0');
         }
         if (dom.cvMask) {
             dom.cvMask.style.setProperty('--meter-fill', '0');
-        }
-        if (dom.smileCurve) {
-            dom.smileCurve.style.setProperty('--smile-t', '0');
-        }
-        if (dom.pupilLeft) {
-            dom.pupilLeft.style.setProperty('--pupil-norm', '0');
-        }
-        if (dom.pupilRight) {
-            dom.pupilRight.style.setProperty('--pupil-norm', '0');
         }
     }
 
@@ -171,12 +143,11 @@ function(event, funcs) {
 
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
-        state.leakyOnsetPendingValue = 0.0;
         state.onsetIndicatorPending = false;
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
         resetPaintedState(state);
-        resetFaceCss(dom);
+        resetMeterCss(dom);
 
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
@@ -207,15 +178,6 @@ function(event, funcs) {
             return;
         }
         state.cvPendingValue = numericValue;
-        scheduleDisplayPaint(state);
-        return;
-    }
-
-    if (symbol === 'leaky_onset_meter') {
-        if (Math.abs(state.leakyOnsetPendingValue - numericValue) < LEAKY_EPSILON) {
-            return;
-        }
-        state.leakyOnsetPendingValue = numericValue;
         scheduleDisplayPaint(state);
         return;
     }
