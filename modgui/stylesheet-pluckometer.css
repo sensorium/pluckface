@@ -1,7 +1,10 @@
 @import url(/fonts/nexa/stylesheet.css);
 @import url(/fonts/questrial/stylesheet.css);
 
-
+/*
+pluck-base image is 1216x876
+proportion is 598/1216 = 0.491776315789474
+*/
 /* = CONTAINER
 ================================================ */
 .mod-pedal-boxy{{{cns}}} {
@@ -12,7 +15,7 @@
     height:431px;
     position:absolute;
     width:598px;
-    border-radius: 21px;
+    border-radius: 40px;
 }
 
 
@@ -43,7 +46,7 @@
     left:10px;
     position:absolute;
     right:10px;
-    top:235px;
+    top:147;
 }
 
 
@@ -215,16 +218,16 @@ When --meter-fill is 0.0 (-90dB), height is 100% (meter is covered) */
     width:35px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob { left:539px; top:254px; width:32px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob { left:539px; top:92px; width:32px; }
+.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob { left:537px; top:235px; width:40px; }
+.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob { left:537px; top:110px; width:40px; }
 
 .mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
-    background-size:auto 32px;
-    height:32px;
-    width:32px;
+    background-size:auto 40px;
+    height:40px;
+    width:40px;
 }
 
 
@@ -276,15 +279,44 @@ When --meter-fill is 0.0 (-90dB), height is 100% (meter is covered) */
     cursor:pointer;
 }
 
-/* Hidden by default; shown via mod-boxy85.mod-pink override below */
 .mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group {
-    display:none;
+    display:block;
+    height:29px;
+    left:27px;
+    margin:0 !important;
+    position:absolute;
+    top:75px;
+    width:115px;
+    z-index:120;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated {
+    background-image:url(/resources/utils/dropdown-arrow-black.png{{{ns}}});
+    color:#4da2a1;
+    font-family:"Courier New", "Liberation Mono", monospace;
+    font-size:11px;
+    font-weight:normal;
+    letter-spacing:0.6px;
+    line-height:1.8;
+    text-transform:uppercase;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-selected {
+    background:rgba(10, 18, 16, 0.88);
+    border-radius:6px;
+    color:#449291;
+    outline:none;
+    padding:3px 9px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-list {
+    color:#449291;
+    z-index:121;
 }
 
 
 /* = SLIDER (used by pluckometer-silence-slider)
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .mod-slider {
 .mod-pedal-boxy{{{cns}}} .pluckometer-silence-slider {
     display:block;
     float:none;
