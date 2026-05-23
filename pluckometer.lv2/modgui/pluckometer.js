@@ -18,7 +18,8 @@ function(event, funcs) {
                 displayTimer: null,
                 paintedInputNorm: null,
                 paintedCv: null,
-                paintedOnsetActive: null
+                paintedOnsetActive: null,
+                paintedFootswitchOn: null
             };
             icon.data(UI_STATE_KEY, state);
         }
@@ -34,7 +35,9 @@ function(event, funcs) {
             inputMeter: icon.find('.pluckometer-input-meter')[0],
             cvMeter: icon.find('.pluckometer-cv-meter')[0],
             onsetLed: icon.find('.pluckometer-onset-led')[0],
-            faceEyes: icon.find('.pluckometer-face-eyes')[0]
+            faceEyes: icon.find('.pluckometer-face-eyes')[0],
+            face: icon.find('.pluckometer-face')[0],
+            footswitch: icon.find('.mod-footswitch')[0]
         };
 
         dom.inputMask = dom.inputMeter ? dom.inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
@@ -44,7 +47,7 @@ function(event, funcs) {
     }
 
     function hasRenderableUi(dom) {
-        return dom.inputMask || dom.cvMask || dom.onsetLed || dom.faceEyes;
+        return dom.inputMask || dom.cvMask || dom.onsetLed || dom.faceEyes || dom.face;
     }
 
     function setCssVarIfChanged(el, name, value, state, paintedKey) {
@@ -79,6 +82,21 @@ function(event, funcs) {
         }
     }
 
+    function paintFaceVisibility(dom, state) {
+        var isOn = !dom.footswitch || dom.footswitch.classList.contains('on');
+        if (state.paintedFootswitchOn === isOn) {
+            return;
+        }
+        state.paintedFootswitchOn = isOn;
+
+        if (dom.face) {
+            dom.face.classList.toggle('pedal-off', !isOn);
+        }
+        if (dom.faceEyes) {
+            dom.faceEyes.classList.toggle('pedal-off', !isOn);
+        }
+    }
+
     function flushDisplayPaint() {
         var state = getState(false);
         if (!state) return;
@@ -94,6 +112,7 @@ function(event, funcs) {
 
         setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
         paintOnsetLed(dom, state);
+        paintFaceVisibility(dom, state);
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
@@ -113,6 +132,7 @@ function(event, funcs) {
         state.paintedInputNorm = null;
         state.paintedCv = null;
         state.paintedOnsetActive = null;
+        state.paintedFootswitchOn = null;
     }
 
     function resetMeterCss(dom) {
@@ -158,6 +178,7 @@ function(event, funcs) {
         state.displayTimer = null;
         resetPaintedState(state);
         resetMeterCss(dom);
+        paintFaceVisibility(dom, state);
 
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
