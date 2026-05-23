@@ -160,6 +160,7 @@ $(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl $(MODGUI_FILES)
 	@rm -rf $(BUILDDIR)modgui
 	@mkdir -p $(BUILDDIR)modgui
 	cp -r modgui/* $(BUILDDIR)modgui/
+	chmod -R a+rX $(BUILDDIR)modgui
 
 # install/uninstall/clean target definitions
 
@@ -170,6 +171,7 @@ install: all
 ifneq ($(MOD),)
 	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui
 	install -t $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui $(BUILDDIR)modgui/*
+	chmod -R a+rX $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui
 endif
 
 sync-local-bundle: all
@@ -180,6 +182,7 @@ sync-local-bundle: all
 ifneq ($(MOD),)
 	rm -rf $(LOCAL_BUNDLE_DIR)/modgui
 	cp -R $(BUILDDIR)modgui $(LOCAL_BUNDLE_DIR)/modgui
+	chmod -R a+rX $(LOCAL_BUNDLE_DIR)/modgui
 endif
 
 uninstall:
