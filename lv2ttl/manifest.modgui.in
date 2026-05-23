@@ -1,14 +1,14 @@
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
 
-<urn:sensorium:pluckometer>
+<urn:sensorium:pluckface>
     modgui:gui [
         modgui:resourcesDirectory <modgui> ;
-        modgui:iconTemplate <modgui/icon-pluckometer.html> ;
-        modgui:stylesheet <modgui/stylesheet-pluckometer.css> ;
-        modgui:javascript <modgui/pluckometer.js> ;
-        modgui:screenshot <modgui/screenshot-pluckometer.png> ;
-        modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
+        modgui:iconTemplate <modgui/icon-pluckface.html> ;
+        modgui:stylesheet <modgui/stylesheet-pluckface.css> ;
+        modgui:javascript <modgui/pluckface.js> ;
+        modgui:screenshot <modgui/screenshot-pluckface.png> ;
+        modgui:thumbnail <modgui/thumbnail-pluckface.png> ;
         modgui:monitoredOutputs [
             lv2:symbol "input_level_db" ;
         ] , [

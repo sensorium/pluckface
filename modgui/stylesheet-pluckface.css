@@ -20,7 +20,7 @@ proportion is 598/1216 = 0.491776315789474
 
 /* = FACE GRAPHIC
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-face {
+.mod-pedal-boxy{{{cns}}} .pluckface-face {
     background-image:url(/resources/pedals/pluck-face-clown-green-screen.png{{{ns}}});
     background-position:center;
     background-repeat:no-repeat;
@@ -36,11 +36,11 @@ proportion is 598/1216 = 0.491776315789474
     will-change: opacity;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-face.pedal-off {
+.mod-pedal-boxy{{{cns}}} .pluckface-face.pedal-off {
     opacity: 0;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-face-eyes {
+.mod-pedal-boxy{{{cns}}} .pluckface-face-eyes {
     background-image:url(/resources/pedals/pluck-face-clown-green-screen-eyes-295x170.png{{{ns}}});
     background-position:center;
     background-repeat:no-repeat;
@@ -57,11 +57,11 @@ proportion is 598/1216 = 0.491776315789474
     height: 83.6px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-face-eyes.active {
+.mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.active {
     opacity:1;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-face-eyes.pedal-off {
+.mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.pedal-off {
     opacity: 0 !important;
 }
 
@@ -100,7 +100,7 @@ proportion is 598/1216 = 0.491776315789474
 
 /* = INPUT LEVEL METER
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter {
     background:rgba(0,0,0,0.2);
     box-sizing:border-box;
     border-radius:3px;
@@ -116,7 +116,7 @@ proportion is 598/1216 = 0.491776315789474
 /* The mask covers the meter via scaleY driven by --meter-fill.
 When --meter-fill is 1.0 (0dB), scaleY is 0 (mask is invisible).
 When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-mask {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-mask {
     background:rgba(0,0,0,0.85);
     height:100%;
     left:0;
@@ -133,7 +133,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 
 /* = CV METER
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter {
     box-sizing:border-box;
     overflow:hidden;
     position:absolute;
@@ -144,7 +144,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     z-index:65;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-mask {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-mask {
     background:rgba(0,0,0,0.85);
     height:100%;
     left:0;
@@ -160,7 +160,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 
 /* = ONSET LED
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-led {
     position:absolute;
     left:138px;
     top:327px;
@@ -176,7 +176,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     pointer-events: none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led.active {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-led.active {
     opacity:1;
 }
 
@@ -235,30 +235,30 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 }
 
 /* Hidden by default; shown via mod-boxy85.mod-pink overrides below */
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-window-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-mix-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-decay-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-smoothing-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob,
-.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-window-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob {
     display:block;
     position:absolute;
     transform:translate(-50%, -50%);
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-knob { left:65px; top:341px; width:35px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-window-knob { left:248px; top:341px; width:35px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-mix-knob { left:337px; top:341px; width:35px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-decay-knob { left:425px; top:341px; width:35px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-smoothing-knob { left:516px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-knob { left:65px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-window-knob { left:248px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob { left:337px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob { left:425px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob { left:516px; top:341px; width:35px; }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckometer-window-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-mix-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-decay-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-smoothing-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-window-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 35px;
@@ -266,11 +266,11 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     width:35px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob { left:537px; top:235px; width:40px; }
-.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob { left:537px; top:110px; width:40px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob { left:537px; top:235px; width:40px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob { left:537px; top:110px; width:40px; }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 40px;
@@ -327,7 +327,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     cursor:pointer;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group {
     display:block;
     height:29px;
     left:27px;
@@ -338,7 +338,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     z-index:120;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group .mod-enumerated {
     background-image:url(/resources/utils/dropdown-arrow-black.png{{{ns}}});
     color:#4da2a1;
     font-family:"Courier New", "Liberation Mono", monospace;
@@ -349,7 +349,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     text-transform:uppercase;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-selected {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group .mod-enumerated .mod-enumerated-selected {
     background:rgba(10, 18, 16, 0.88);
     border-radius:6px;
     color:#449291;
@@ -357,15 +357,15 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     padding:3px 9px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-method-group .mod-enumerated .mod-enumerated-list {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group .mod-enumerated .mod-enumerated-list {
     color:#449291;
     z-index:121;
 }
 
 
-/* = SLIDER (used by pluckometer-silence-slider)
+/* = SLIDER (used by pluckface-silence-slider)
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-silence-slider {
+.mod-pedal-boxy{{{cns}}} .pluckface-silence-slider {
     display:block;
     height:140px;
     left:111px;
@@ -377,7 +377,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-silence-slider .mod-slider-image {
+.mod-pedal-boxy{{{cns}}} .pluckface-silence-slider .mod-slider-image {
     background-image:url(/resources/pedals/slider_sprite_2048x140.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:2048px 140px;

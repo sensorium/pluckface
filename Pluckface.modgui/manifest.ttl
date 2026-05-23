@@ -1,30 +1,15 @@
-@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-
-<urn:sensorium:pluckometer>
-	a lv2:Plugin ;
-	lv2:binary <pluckometer.dylib>  ;
-	rdfs:seeAlso <pluckometer.ttl> .
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
 
-<urn:sensorium:pluckometer>
+<urn:sensorium:pluckface>
     modgui:gui [
         modgui:resourcesDirectory <modgui> ;
-        modgui:iconTemplate <modgui/icon-pluckometer.html> ;
-        modgui:stylesheet <modgui/stylesheet-pluckometer.css> ;
-        modgui:javascript <modgui/pluckometer.js> ;
-        modgui:screenshot <modgui/screenshot-pluckometer.png> ;
-        modgui:thumbnail <modgui/thumbnail-pluckometer.png> ;
-        modgui:monitoredOutputs [
-            lv2:symbol "input_level_db" ;
-        ] , [
-            lv2:symbol "cv_out_meter" ;
-        ] , [
-            lv2:symbol "onset_indicator" ;
-        ] ;
-        modgui:brand "sensorium";
-        modgui:label "Pluckometer";
+        modgui:iconTemplate <modgui/icon-pluckface.html> ;
+        modgui:stylesheet <modgui/stylesheet-pluckface.css> ;
+        modgui:screenshot <modgui/screenshot-pluckface.png> ;
+        modgui:thumbnail <modgui/thumbnail-pluckface.png> ;
+        modgui:brand "sensorium" ;
+        modgui:label "Pluckface" ;
         modgui:model "boxy" ;
         modgui:panel "10-sliders" ;
         modgui:color "pink" ;
@@ -56,14 +41,18 @@
         ] , [
             lv2:index 6 ;
             lv2:symbol "leaky_mix" ;
-            lv2:name "Mix Window and Integrator" ;
+            lv2:name "Leaky Mix" ;
         ] , [
             lv2:index 7 ;
             lv2:symbol "leaky_decay_seconds" ;
-            lv2:name "Integrator Decay" ;
+            lv2:name "Leaky Decay" ;
         ] , [
             lv2:index 8 ;
             lv2:symbol "cv_smoothing" ;
-            lv2:name "CV Smoothing (50ms-1s)" ;
+            lv2:name "CV Smoothing" ;
+        ] , [
+            lv2:index 9 ;
+            lv2:symbol "cv_out_clamp" ;
+            lv2:name "CV Out Clamp" ;
         ] ;
     ] .

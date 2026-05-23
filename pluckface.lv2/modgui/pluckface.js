@@ -1,6 +1,6 @@
 function(event) {
     var INPUT_METER_INTERVAL_MS = 100;
-    var UI_STATE_KEY = 'pluckometerUi';
+    var UI_STATE_KEY = 'pluckfaceUi';
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
 
@@ -33,16 +33,16 @@ function(event) {
         var dom = {
             inputMask: null,
             cvMask: null,
-            onsetLed: icon.find('.pluckometer-onset-led')[0],
-            faceEyes: icon.find('.pluckometer-face-eyes')[0],
-            face: icon.find('.pluckometer-face')[0],
+            onsetLed: icon.find('.pluckface-onset-led')[0],
+            faceEyes: icon.find('.pluckface-face-eyes')[0],
+            face: icon.find('.pluckface-face')[0],
             footswitch: icon.find('.mod-footswitch')[0]
         };
 
-        var inputMeter = icon.find('.pluckometer-input-meter')[0];
-        var cvMeter = icon.find('.pluckometer-cv-meter')[0];
-        dom.inputMask = inputMeter ? inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
-        dom.cvMask = cvMeter ? cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
+        var inputMeter = icon.find('.pluckface-input-meter')[0];
+        var cvMeter = icon.find('.pluckface-cv-meter')[0];
+        dom.inputMask = inputMeter ? inputMeter.querySelector('.pluckface-input-meter-mask') : null;
+        dom.cvMask = cvMeter ? cvMeter.querySelector('.pluckface-cv-meter-mask') : null;
         state.dom = dom;
         return dom;
     }
@@ -169,7 +169,7 @@ function(event) {
             var h = hiddenSliders[s];
             var hiddenSlider = icon.find(h.scope + '.mod-slider-image[mod-port-symbol="' + h.symbol + '"]').closest('.mod-slider');
             if (hiddenSlider && hiddenSlider.length) {
-                hiddenSlider.addClass('pluckometer-hidden-control');
+                hiddenSlider.addClass('pluckface-hidden-control');
             }
         }
 

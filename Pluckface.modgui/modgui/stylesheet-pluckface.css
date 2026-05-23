@@ -141,7 +141,7 @@
 
 /* = INPUT LEVEL METER
 ================================================ */
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter {
     position:absolute;
     right:16px;
     top:176px;
@@ -149,7 +149,7 @@
     z-index:45;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-label {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-label {
     color:#111;
     font-family:"Nexa";
     font-size:8px;
@@ -160,7 +160,7 @@
     text-align:center;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-bar {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
     box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
@@ -170,7 +170,7 @@
     padding:4px 3px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-seg {
     background:rgba(255,255,255,0.30);
     border-radius:2px;
     height:7px;
@@ -178,19 +178,19 @@
     width:100%;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.active {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-seg.active {
     background:#86ef4f;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.warn {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-seg.warn {
     background:#facc15;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-input-meter-seg.hot {
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-seg.hot {
     background:#ef4444;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter {
     position:absolute;
     right:38px;
     top:176px;
@@ -198,7 +198,7 @@
     z-index:45;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-label {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-label {
     color:#111;
     font-family:"Nexa";
     font-size:8px;
@@ -209,7 +209,7 @@
     text-align:center;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-bar {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-bar {
     background:rgba(0,0,0,0.2);
     border-radius:3px;
     box-shadow:inset 0 0 2px rgba(0,0,0,0.35);
@@ -219,7 +219,7 @@
     padding:4px 3px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-seg {
     background:rgba(255,255,255,0.30);
     border-radius:2px;
     height:7px;
@@ -227,19 +227,19 @@
     width:100%;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.active {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-seg.active {
     background:#60a5fa;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.warn {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-seg.warn {
     background:#facc15;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-meter-seg.hot {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-seg.hot {
     background:#ef4444;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-led {
     position:absolute;
     left:16px;
     top:176px;
@@ -253,7 +253,7 @@
     z-index:45;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-led.active {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-led.active {
     opacity:1;
 }
 
@@ -628,7 +628,7 @@
     width:598px;
 }
 
-/* Pluckometer custom base keeps native aspect ratio (1216x876) while
+/* Pluckface custom base keeps native aspect ratio (1216x876) while
  * preserving the original control field alignment from the old 364x431 skin. */
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-plugin-name {
     left:147px;
@@ -646,15 +646,15 @@
     margin-right:auto !important;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-input-meter {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-input-meter {
     right:133px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-meter {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-cv-meter {
     right:155px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-silence-slider {
     float:none;
     height:140px;
     left:111px;
@@ -666,7 +666,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-silence-slider .mod-slider-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-silence-slider .mod-slider-image {
     background-image:url(/resources/pedals/slider_sprite.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:2048px 140px;
@@ -675,40 +675,40 @@
     width:32px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-led {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-onset-led {
     left:138px;
     top:327px;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-onset-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-onset-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-window-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-window-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-mix-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-leaky-decay-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-cv-smoothing-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-offset-cv-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckometer-scale-cv-knob {
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob {
     display:none;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-onset-knob {
     display:block;
     left:65px;
     position:absolute;
@@ -718,7 +718,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-onset-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-onset-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 41px;
@@ -726,7 +726,7 @@
     width:41px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-window-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-window-knob {
     display:block;
     left:248px;
     position:absolute;
@@ -736,7 +736,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-window-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-window-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 41px;
@@ -744,7 +744,7 @@
     width:41px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-mix-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-leaky-mix-knob {
     display:block;
     left:337px;
     position:absolute;
@@ -754,7 +754,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-mix-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-leaky-mix-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 41px;
@@ -762,7 +762,7 @@
     width:41px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-decay-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-leaky-decay-knob {
     display:block;
     left:425px;
     position:absolute;
@@ -772,7 +772,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-leaky-decay-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-leaky-decay-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 41px;
@@ -780,7 +780,7 @@
     width:41px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-smoothing-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-cv-smoothing-knob {
     display:block;
     left:516px;
     position:absolute;
@@ -790,7 +790,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-cv-smoothing-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-cv-smoothing-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 41px;
@@ -798,7 +798,7 @@
     width:41px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-offset-cv-knob {
     display:block;
     left:537px;
     position:absolute;
@@ -808,7 +808,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-offset-cv-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-offset-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 50px;
@@ -816,7 +816,7 @@
     width:50px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-scale-cv-knob {
     display:block;
     left:537px;
     position:absolute;
@@ -826,7 +826,7 @@
     z-index:56;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckometer-scale-cv-knob .mod-knob-image {
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .pluckface-scale-cv-knob .mod-knob-image {
     background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 50px;
@@ -834,7 +834,7 @@
     width:50px;
 }
 
-.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider.pluckometer-hidden-control,
+.mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-slider.pluckface-hidden-control,
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(2),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(4),
 .mod-pedal-boxy{{{cns}}}.mod-boxy85.mod-pink .mod-control-group .mod-slider:nth-child(7),

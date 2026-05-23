@@ -6,3 +6,5 @@ build
 *.dylib
 .envrc
 litellm_config.yaml
+.cursor*
+.vscode

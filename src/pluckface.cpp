@@ -1,6 +1,6 @@
 /*
   Copyright 2026 Tim Barrass https://github.com/sensorium
-  Pluckometer was hacked based on the Aubio Harmonizer LV2 plugin by Daniel Sheeler https://github.com/dsheeler/harmonizer.lv2
+  Pluckface was hacked based on the Aubio Harmonizer LV2 plugin by Daniel Sheeler https://github.com/dsheeler/harmonizer.lv2
   Copyright 2017 Daniel Sheeler <dsheeler@pobox.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -35,7 +35,7 @@
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define PLUCKOMETER_URI "urn:sensorium:pluckometer"
+#define PLUCKFACE_URI "urn:sensorium:pluckface"
 #define RB_SIZE 16384
 #define NUM_ONSET_METHODS 9
 
@@ -43,22 +43,22 @@
 
 typedef enum
 {
-  PLUCKOMETER_ONSET_METHOD = 0,
-  PLUCKOMETER_ONSET_SENSITIVITY = 1,
-  PLUCKOMETER_SILENCE_THRESHOLD = 2,
-  PLUCKOMETER_WINDOW_SECONDS = 3,
-  PLUCKOMETER_SCALE_CV_OUT = 4,
-  PLUCKOMETER_OFFSET_CV_OUT = 5,
-  PLUCKOMETER_LEAKY_MIX = 6,
-  PLUCKOMETER_LEAKY_DECAY_SECONDS = 7,
-  PLUCKOMETER_CV_SMOOTHING = 8,
-  PLUCKOMETER_CV_OUT = 9,
-  PLUCKOMETER_CV_INVERT_OUT = 10,
-  PLUCKOMETER_CV_TRIGGER_OUT = 11,
-  PLUCKOMETER_INPUT = 12,
-  PLUCKOMETER_INPUT_LEVEL_DB = 13,
-  PLUCKOMETER_CV_OUT_METER = 14,
-  PLUCKOMETER_ONSET_INDICATOR = 15
+  PLUCKFACE_ONSET_METHOD = 0,
+  PLUCKFACE_ONSET_SENSITIVITY = 1,
+  PLUCKFACE_SILENCE_THRESHOLD = 2,
+  PLUCKFACE_WINDOW_SECONDS = 3,
+  PLUCKFACE_SCALE_CV_OUT = 4,
+  PLUCKFACE_OFFSET_CV_OUT = 5,
+  PLUCKFACE_LEAKY_MIX = 6,
+  PLUCKFACE_LEAKY_DECAY_SECONDS = 7,
+  PLUCKFACE_CV_SMOOTHING = 8,
+  PLUCKFACE_CV_OUT = 9,
+  PLUCKFACE_CV_INVERT_OUT = 10,
+  PLUCKFACE_CV_TRIGGER_OUT = 11,
+  PLUCKFACE_INPUT = 12,
+  PLUCKFACE_INPUT_LEVEL_DB = 13,
+  PLUCKFACE_CV_OUT_METER = 14,
+  PLUCKFACE_ONSET_INDICATOR = 15
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -159,10 +159,10 @@ typedef struct
   float param_alpha;
   float cached_alpha;
   float last_cv_smoothing;
-} Pluckometer;
+} Pluckface;
 
 static void
-publish_gui_meters(Pluckometer *self)
+publish_gui_meters(Pluckface *self)
 {
   if (self->input_level_db)
   {
@@ -207,7 +207,7 @@ instantiate(const LV2_Descriptor *descriptor,
   (void)descriptor;
   (void)bundle_path;
 
-  Pluckometer *self = (Pluckometer *)calloc(1, sizeof(Pluckometer));
+  Pluckface *self = (Pluckface *)calloc(1, sizeof(Pluckface));
   if (!self)
   {
     return NULL;
@@ -228,7 +228,7 @@ instantiate(const LV2_Descriptor *descriptor,
   lv2_log_logger_init(&self->logger, self->map, self->log);
   if (!self->map)
   {
-    lv2_log_error(&self->logger, "pluckometer.lv2 error: Host does not support urid:map\n");
+    lv2_log_error(&self->logger, "pluckface.lv2 error: Host does not support urid:map\n");
     free(self);
     return NULL;
   }
@@ -247,7 +247,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->onsets_detected = new (std::nothrow) int8_t[size_detected];
   if (self->onsets_detected == nullptr)
   {
-    lv2_log_error(&self->logger, "pluckometer.lv2 error: couldn't allocate memory for onsets_detected\n");
+    lv2_log_error(&self->logger, "pluckface.lv2 error: couldn't allocate memory for onsets_detected\n");
     free(self);
     return NULL;
   }
@@ -293,55 +293,55 @@ connect_port(LV2_Handle instance,
              uint32_t port,
              void *data)
 {
-  Pluckometer *self = (Pluckometer *)instance;
+  Pluckface *self = (Pluckface *)instance;
   switch ((PortIndex)port)
   {
-  case PLUCKOMETER_ONSET_METHOD:
+  case PLUCKFACE_ONSET_METHOD:
     self->onset_method = (float *)data;
     break;
-  case PLUCKOMETER_ONSET_SENSITIVITY:
+  case PLUCKFACE_ONSET_SENSITIVITY:
     self->onset_sensitivity = (float *)data;
     break;
-  case PLUCKOMETER_SILENCE_THRESHOLD:
+  case PLUCKFACE_SILENCE_THRESHOLD:
     self->silence_threshold = (float *)data;
     break;
-  case PLUCKOMETER_WINDOW_SECONDS:
+  case PLUCKFACE_WINDOW_SECONDS:
     self->window_seconds = (float *)data;
     break;
-  case PLUCKOMETER_SCALE_CV_OUT:
+  case PLUCKFACE_SCALE_CV_OUT:
     self->scale_cv_out = (float *)data;
     break;
-  case PLUCKOMETER_OFFSET_CV_OUT:
+  case PLUCKFACE_OFFSET_CV_OUT:
     self->offset_cv_out = (float *)data;
     break;
-  case PLUCKOMETER_LEAKY_MIX:
+  case PLUCKFACE_LEAKY_MIX:
     self->leaky_mix = (float *)data;
     break;
-  case PLUCKOMETER_LEAKY_DECAY_SECONDS:
+  case PLUCKFACE_LEAKY_DECAY_SECONDS:
     self->leaky_decay_seconds = (float *)data;
     break;
-  case PLUCKOMETER_CV_SMOOTHING:
+  case PLUCKFACE_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
     break;
-  case PLUCKOMETER_CV_INVERT_OUT:
+  case PLUCKFACE_CV_INVERT_OUT:
     self->cv_inverted_out = (float *)data;
     break;
-  case PLUCKOMETER_INPUT:
+  case PLUCKFACE_INPUT:
     self->input = (float *)data;
     break;
-  case PLUCKOMETER_CV_OUT:
+  case PLUCKFACE_CV_OUT:
     self->cv_out = (float *)data;
     break;
-  case PLUCKOMETER_CV_TRIGGER_OUT:
+  case PLUCKFACE_CV_TRIGGER_OUT:
     self->cv_trigger_out = (float *)data;
     break;
-  case PLUCKOMETER_INPUT_LEVEL_DB:
+  case PLUCKFACE_INPUT_LEVEL_DB:
     self->input_level_db = (float *)data;
     break;
-  case PLUCKOMETER_CV_OUT_METER:
+  case PLUCKFACE_CV_OUT_METER:
     self->cv_out_meter = (float *)data;
     break;
-  case PLUCKOMETER_ONSET_INDICATOR:
+  case PLUCKFACE_ONSET_INDICATOR:
     self->onset_indicator = (float *)data;
     break;
   }
@@ -350,7 +350,7 @@ connect_port(LV2_Handle instance,
 static void
 activate(LV2_Handle instance)
 {
-  Pluckometer *self = (Pluckometer *)instance;
+  Pluckface *self = (Pluckface *)instance;
   if (!self)
   {
     return;
@@ -373,7 +373,7 @@ deactivate(LV2_Handle instance)
 static void
 run(LV2_Handle instance, uint32_t n_samples)
 {
-  Pluckometer *self = (Pluckometer *)instance;
+  Pluckface *self = (Pluckface *)instance;
 
   // Hosts should connect all ports before run(), but guard anyway to avoid
   // hard crashes if a host/plugin state is incomplete.
@@ -595,7 +595,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 static void
 cleanup(LV2_Handle instance)
 {
-  Pluckometer *self = (Pluckometer *)instance;
+  Pluckface *self = (Pluckface *)instance;
   for (uint8_t i = 0; i < NUM_ONSET_METHODS; i++)
   {
     del_aubio_onset(self->onsets[i]);
@@ -619,7 +619,7 @@ extension_data(const char *uri)
 }
 
 static const LV2_Descriptor descriptor = {
-    PLUCKOMETER_URI,
+    PLUCKFACE_URI,
     instantiate,
     connect_port,
     activate,

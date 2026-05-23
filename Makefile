@@ -9,15 +9,15 @@ AUBIO_MODE ?= system
 STRIP?=strip
 STRIPFLAGS?=-s
 
-pluckometer_VERSION?=$(shell git describe --tags HEAD 2>/dev/null\
+pluckface_VERSION?=$(shell git describe --tags HEAD 2>/dev/null\
 									 	| sed 's/-g.*$$//;s/^v//' || echo "LV2")
 ###############################################################################
 LIB_EXT=.so
 BUILDDIR=build/
 
 LOADLIBES=-lm
-LV2NAME=pluckometer
-BUNDLE=pluckometer.lv2
+LV2NAME=pluckface
+BUNDLE=pluckface.lv2
 LOCAL_BUNDLE_DIR ?= $(BUNDLE)
 targets=
 SRCS =
@@ -51,9 +51,9 @@ targets+=$(BUILDDIR)$(LV2NAME)$(LIB_EXT)
 
 ifneq ($(MOD),)
   targets+=$(BUILDDIR)modgui
-	MODLABEL=mod:label \"Pluckometer\";
+	MODLABEL=mod:label \"Pluckface\";
   MODBRAND=mod:brand \"sensorium\";
-	MODGUILABEL=modgui:label \"Pluckometer\";
+	MODGUILABEL=modgui:label \"Pluckface\";
   MODGUIBRAND=modgui:brand \"sensorium\";
 else
   MODLABEL=
@@ -64,7 +64,7 @@ MODGUI_FILES := $(shell find modgui -type f | sort)
 
 ###############################################################################
 # extract versions
-LV2VERSION=$(pluckometer_VERSION)
+LV2VERSION=$(pluckface_VERSION)
 include git2lv2.mk
 
 # check for build-dependencies
