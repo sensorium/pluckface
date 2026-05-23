@@ -3,7 +3,14 @@ Pluckface - Onset Rate Detector
 
 This is work in progress, don't use it yet.
 
-Pluckface tells how fast you're playing, and sends out a control voltage (CV) you can use to change parameters on effects.  Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  It also sends a trigger signal out on each note detected (but other plugins also do that, yawn).
+Pluckface tells how fast you're playing, and sends out a control voltage (CV) you can use to change parameters on effects.  
+
+Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  
+
+It also sends a trigger signal out on each note detected (but other plugins also do that).
+
+The project was initially hacked from an Aubio Harmonizer LV2 plugin by Daniel Sheeler: https://github.com/dsheeler/harmonizer.lv2
+It builds using an included local copy of the Aubio library: https://github.com/aubio/aubio
 
 Install
 -------
