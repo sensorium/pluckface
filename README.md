@@ -1,6 +1,8 @@
 Pluckface - Onset Rate Detector
 ============
 
+This is work in progress, don't use it yet.
+
 Pluckface tells how fast you're playing, and sends out a control voltage (CV) you can use to change parameters on effects.  Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  It also sends a trigger signal out on each note detected (but other plugins also do that, yawn).
 
 Install
