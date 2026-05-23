@@ -1,6 +1,5 @@
-function(event, funcs) {
-    var INPUT_METER_HZ = 10;
-    var INPUT_METER_INTERVAL_MS = Math.round(1000 / INPUT_METER_HZ);
+function(event) {
+    var INPUT_METER_INTERVAL_MS = 100;
     var UI_STATE_KEY = 'pluckometerUi';
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
@@ -32,16 +31,18 @@ function(event, funcs) {
         }
 
         var dom = {
-            inputMeter: icon.find('.pluckometer-input-meter')[0],
-            cvMeter: icon.find('.pluckometer-cv-meter')[0],
+            inputMask: null,
+            cvMask: null,
             onsetLed: icon.find('.pluckometer-onset-led')[0],
             faceEyes: icon.find('.pluckometer-face-eyes')[0],
             face: icon.find('.pluckometer-face')[0],
             footswitch: icon.find('.mod-footswitch')[0]
         };
 
-        dom.inputMask = dom.inputMeter ? dom.inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
-        dom.cvMask = dom.cvMeter ? dom.cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
+        var inputMeter = icon.find('.pluckometer-input-meter')[0];
+        var cvMeter = icon.find('.pluckometer-cv-meter')[0];
+        dom.inputMask = inputMeter ? inputMeter.querySelector('.pluckometer-input-meter-mask') : null;
+        dom.cvMask = cvMeter ? cvMeter.querySelector('.pluckometer-cv-meter-mask') : null;
         state.dom = dom;
         return dom;
     }
@@ -83,7 +84,7 @@ function(event, funcs) {
     }
 
     function paintFaceVisibility(dom, state) {
-        var isOn = !dom.footswitch || dom.footswitch.classList.contains('on');
+        var isOn = !dom.footswitch || !dom.footswitch.classList.contains('on');
         if (state.paintedFootswitchOn === isOn) {
             return;
         }
@@ -102,7 +103,7 @@ function(event, funcs) {
         if (!state) return;
 
         var dom = bindDom(state);
-        var cv = Math.min(Math.max(state.cvPendingValue || 0.0, 0.0), 1.0);
+        var cv = Math.min(Math.max(state.cvPendingValue, 0.0), 1.0);
 
         if (dom.inputMask) {
             var db = Math.min(Math.max(state.inputPendingDb, -90.0), 0.0);
@@ -110,9 +111,10 @@ function(event, funcs) {
             setCssVarIfChanged(dom.inputMask, '--meter-fill', inputNorm, state, 'paintedInputNorm');
         }
 
-        setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
+        if (dom.cvMask) {
+            setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
+        }
         paintOnsetLed(dom, state);
-        paintFaceVisibility(dom, state);
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
@@ -135,19 +137,13 @@ function(event, funcs) {
         state.paintedFootswitchOn = null;
     }
 
-    function resetMeterCss(dom) {
-        if (dom.inputMask) {
-            dom.inputMask.style.setProperty('--meter-fill', '0');
-        }
-        if (dom.cvMask) {
-            dom.cvMask.style.setProperty('--meter-fill', '0');
-        }
-    }
-
     if (event.type === 'start') {
         var oldState = getState(false);
         if (oldState && oldState.displayTimer) {
             clearTimeout(oldState.displayTimer);
+        }
+        if (oldState && oldState.footswitchObserver) {
+            oldState.footswitchObserver.disconnect();
         }
 
         icon.removeData(UI_STATE_KEY);
@@ -158,17 +154,23 @@ function(event, funcs) {
             return;
         }
 
-        var hiddenSliderSymbols = ['onset_method', 'onset_sensitivity', 'window_seconds', 'leaky_mix', 'leaky_decay_seconds', 'cv_smoothing', 'offset_cv_out', 'scale_cv_out'];
-        for (var s = 0; s < hiddenSliderSymbols.length; s++) {
-            var hiddenSlider = icon.find('.mod-slider-image[mod-port-symbol="' + hiddenSliderSymbols[s] + '"]').closest('.mod-slider');
+        var hiddenSliders = [
+            { symbol: 'onset_method',         scope: '' },
+            { symbol: 'onset_sensitivity',    scope: '' },
+            { symbol: 'window_seconds',        scope: '' },
+            { symbol: 'leaky_mix',             scope: '' },
+            { symbol: 'leaky_decay_seconds',   scope: '' },
+            { symbol: 'cv_smoothing',          scope: '' },
+            { symbol: 'offset_cv_out',         scope: '' },
+            { symbol: 'scale_cv_out',          scope: '' },
+            { symbol: 'silence_threshold',     scope: '.mod-control-group ' }
+        ];
+        for (var s = 0; s < hiddenSliders.length; s++) {
+            var h = hiddenSliders[s];
+            var hiddenSlider = icon.find(h.scope + '.mod-slider-image[mod-port-symbol="' + h.symbol + '"]').closest('.mod-slider');
             if (hiddenSlider && hiddenSlider.length) {
                 hiddenSlider.addClass('pluckometer-hidden-control');
             }
-        }
-
-        var autoSilenceSlider = icon.find('.mod-control-group .mod-slider-image[mod-port-symbol="silence_threshold"]').closest('.mod-slider');
-        if (autoSilenceSlider && autoSilenceSlider.length) {
-            autoSilenceSlider.addClass('pluckometer-hidden-control');
         }
 
         state.inputPendingDb = -90.0;
@@ -177,8 +179,24 @@ function(event, funcs) {
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
         resetPaintedState(state);
-        resetMeterCss(dom);
+        if (dom.inputMask) {
+            dom.inputMask.style.setProperty('--meter-fill', '0');
+        }
+        if (dom.cvMask) {
+            dom.cvMask.style.setProperty('--meter-fill', '0');
+        }
         paintFaceVisibility(dom, state);
+
+        if (dom.footswitch) {
+            var footswitchObserver = new MutationObserver(function() {
+                var state = getState(false);
+                if (!state) return;
+                state.paintedFootswitchOn = null;
+                paintFaceVisibility(bindDom(state), state);
+            });
+            footswitchObserver.observe(dom.footswitch, { attributes: true, attributeFilter: ['class'] });
+            state.footswitchObserver = footswitchObserver;
+        }
 
         if (dom.onsetLed) {
             dom.onsetLed.classList.remove('active');
