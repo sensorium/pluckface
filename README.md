@@ -3,14 +3,24 @@ Pluckface - Onset Rate Detector
 
 This is work in progress, don't use it yet.
 
-Pluckface tells how fast you're playing, and sends out a control voltage (CV) you can use to change parameters on effects.  
+Pluckface counts your plucks (audio onsets) and sends the count as a control voltage which varies with how fast you play.  The CV can be used to change parameters on other plugins.  
 
 Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  
 
-It also sends a trigger signal out on each note detected (but other plugins also do that).
+CV out 1: positive moving count (0-1V)
+CV out 2: same signal, inverted so 0-1V -> 1-0V
+CV out 3 trigger on each onset
 
 The project was initially hacked from an Aubio Harmonizer LV2 plugin by Daniel Sheeler: https://github.com/dsheeler/harmonizer.lv2
 It builds using an included local copy of the Aubio library: https://github.com/aubio/aubio
+
+The CV outputs are throttled to 100Hz update rate as well as quantised to 256 levels, to reduce data clogging and GUI clag.
+
+Pluckface is initially intended for Mod audio devices.  It has also been built and tested on macOS Sonoma 14.8.5 with the Mod Desktop App.
+
+
+
+
 
 Install
 -------
