@@ -84,7 +84,7 @@
   lv2:ControlPort ;
   lv2:index 2 ;
   lv2:symbol "silence_threshold" ;
-  lv2:name "Silence Thrshld";
+  lv2:name "Silence Threshold";
   lv2:default -90.0 ;
   lv2:minimum -90.0 ;
   lv2:maximum -10.0 ;
@@ -159,7 +159,7 @@
   lv2:ControlPort ;
   lv2:index 6 ;
   lv2:symbol "leaky_mix" ;
-  lv2:name "Window/Integrator Mix";
+  lv2:name "Mix Window and Integrator Levels";
   lv2:default 0.0 ;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
@@ -198,7 +198,7 @@
   lv2:ControlPort ;
   lv2:index 8 ;
   lv2:symbol "cv_smoothing" ;
-  lv2:name "CV Smoothing .05-1s";
+  lv2:name "CV Smoothing (50ms-1s)";
   lv2:default 0.9 ;
   lv2:minimum 0.01 ;
   lv2:maximum 1.0 ;
@@ -215,7 +215,7 @@
   rdf:value 1.0
   ];
   ], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort, mod:CVPort ;
   lv2:index 9;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
@@ -223,7 +223,7 @@
   lv2:symbol "cv_out";
   lv2:name "CV Output";
 	], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort, mod:CVPort ;
   lv2:index 10;
   lv2:symbol "cv_inverted_out";
   lv2:name "Inverted CV Output";
@@ -231,10 +231,10 @@
   lv2:maximum 1.0 ;
   mod:cvPortMode mod:unipolarPositive ;
   ], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort, mod:CVPort ;
   lv2:index 11;
   lv2:minimum 0.0 ;
-  lv2:maximum 10.0 ;
+  lv2:maximum 1.0 ;
   lv2:symbol "cv_trigger_out";
   lv2:name "CV Trigger Output";
   mod:cvPortMode mod:unipolarPositive ;

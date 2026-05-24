@@ -111,13 +111,13 @@ all: initialize $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(targets)
 lv2syms:
 	echo "_lv2_descriptor" > lv2syms
 
-$(BUILDDIR)manifest.ttl: lv2ttl/manifest.ttl.in lv2ttl/manifest.modgui.in Makefile
+$(BUILDDIR)manifest.ttl: lv2ttl/manifest_ttl.in lv2ttl/manifest_modgui.in Makefile
 	@mkdir -p $(BUILDDIR)
 	sed "s/@LV2NAME@/$(LV2NAME)/;s/@LIB_EXT@/$(LIB_EXT)/" \
-	  lv2ttl/manifest.ttl.in > $(BUILDDIR)manifest.ttl
+	  lv2ttl/manifest_ttl.in > $(BUILDDIR)manifest.ttl
 ifneq ($(MOD),)
 	sed "s/@LV2NAME@/$(LV2NAME)/;s/@URISUFFIX@/$(URISUFFIX)/;s/@MODBRAND@/$(MODGUIBRAND)/;s/@MODLABEL@/$(MODGUILABEL)/" \
-		lv2ttl/manifest.modgui.in >> $(BUILDDIR)manifest.ttl
+		lv2ttl/manifest_modgui.in >> $(BUILDDIR)manifest.ttl
 endif
 
 $(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME).ttl.in Makefile
