@@ -215,7 +215,7 @@
   rdf:value 1.0
   ];
   ], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort; mod:CVPort;
   lv2:index 9;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
@@ -223,7 +223,7 @@
   lv2:symbol "cv_out";
   lv2:name "CV Output";
 	], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort; mod:CVPort;
   lv2:index 10;
   lv2:symbol "cv_inverted_out";
   lv2:name "Inverted CV Output";
@@ -231,7 +231,7 @@
   lv2:maximum 1.0 ;
   mod:cvPortMode mod:unipolarPositive ;
   ], [
-  a lv2:OutputPort, lv2:CVPort;
+  a lv2:OutputPort, lv2:CVPort; mod:CVPort;
   lv2:index 11;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
