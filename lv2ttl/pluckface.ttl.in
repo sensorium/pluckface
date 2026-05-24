@@ -234,9 +234,10 @@
   a lv2:OutputPort, lv2:CVPort;
   lv2:index 11;
   lv2:minimum 0.0 ;
-  lv2:maximum 10.0 ;
+  lv2:maximum 1.0 ;
   lv2:symbol "cv_trigger_out";
   lv2:name "CV Trigger Output";
+  mod:cvPortMode mod:unipolarPositive ;
 	], [
   a lv2:AudioPort ,
   lv2:InputPort ;
