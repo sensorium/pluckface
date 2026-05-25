@@ -160,6 +160,7 @@ $(BUILDDIR)modgui: $(BUILDDIR)$(LV2NAME).ttl $(MODGUI_FILES)
 	@rm -rf $(BUILDDIR)modgui
 	@mkdir -p $(BUILDDIR)modgui
 	cp -r modgui/* $(BUILDDIR)modgui/
+	cp $(BUILDDIR)$(LV2NAME).ttl $(BUILDDIR)modgui/$(LV2NAME).ttl
 	chmod -R a+rX $(BUILDDIR)modgui
 
 # install/uninstall/clean target definitions

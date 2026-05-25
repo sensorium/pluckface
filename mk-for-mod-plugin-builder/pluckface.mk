@@ -4,7 +4,7 @@
 #
 ######################################
 # get version hash with: git rev-parse HEAD
-PLUCKFACE_VERSION = 322ee9b1d938b349bb5954197b4ffdc88a40f696
+PLUCKFACE_VERSION = 0a7fc90debbe5451e5cbd744a9edbd2447a12950
 PLUCKFACE_SITE = https://github.com/sensorium/pluckface.git
 PLUCKFACE_SITE_METHOD = git
 PLUCKFACE_DEPENDENCIES = lv2
