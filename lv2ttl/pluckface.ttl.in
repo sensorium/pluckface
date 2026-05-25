@@ -15,9 +15,19 @@
 
   <urn:sensorium:pluckface>
   a lv2:Plugin , lv2:UtilityPlugin, doap:Project ;
-  doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+  doap:license "GPL3" ;
   doap:maintainer <https://github.org/sensorium/> ;
   doap:name "Pluckface" ;
+  rdfs:comment '''
+  Pluckface counts your plucks (audio onsets) and sends the count as a control voltage which varies with how fast you play.  The CV can be used to change parameters on other plugins.  
+
+  Play sparse, low CV, lots of notes, high CV, Say, long reverb when you play slow, and less when you're burning your fingers.  
+
+  CV out 1: positive moving count (0-1V)
+  CV out 2: same signal, inverted so 0-1V -> 1-0V
+  CV out 3 trigger on each onset
+  ''' ;
+
   @VERSION@
   lv2:optionalFeature lv2:hardRTCapable ;
   lv2:port [
@@ -68,15 +78,15 @@
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
   lv2:scalePoint [
-  #rdfs:label "0 (less sensitive)" ;
+  rdfs:label "0 (less sensitive)" ;
   rdf:value 0.0
   ];
   lv2:scalePoint [
-  #rdfs:label "0.5 (default)" ;
-  rdf:value 0.523
+  rdfs:label "0.5 (default)" ;
+  rdf:value 0.5
   ];
   lv2:scalePoint [
-  #rdfs:label "1 (more sensitive)" ;
+  rdfs:label "1 (more sensitive)" ;
   rdf:value 1.0
   ];
   ], [
@@ -84,7 +94,7 @@
   lv2:ControlPort ;
   lv2:index 2 ;
   lv2:symbol "silence_threshold" ;
-  lv2:name "Silence Threshold";
+  lv2:name "Silence Thrshld";
   lv2:default -40.0 ;
   lv2:minimum -90.0 ;
   lv2:maximum -10.0 ;

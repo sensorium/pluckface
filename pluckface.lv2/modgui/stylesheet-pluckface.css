@@ -49,8 +49,9 @@ proportion is 598/1216 = 0.491776315789474
     top:72.78px;
     position:absolute;
     will-change: opacity;
-    opacity:0.15;
-    transition:opacity 150ms ease-out;
+    opacity:0;
+    /* opacity:0.15; */
+    /* transition:opacity 150ms ease-out; */
     z-index:11;
     pointer-events: none;
     width: 145.07px;
@@ -171,7 +172,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     background-size:contain;
     will-change: opacity;
     opacity:0.15;
-    transition:opacity 150ms ease-out;
+    /* transition:opacity 150ms ease-out; */
     z-index:45;
     pointer-events: none;
 }

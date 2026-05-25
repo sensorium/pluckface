@@ -1,11 +1,13 @@
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix modgui: <http://moddevices.com/ns/modgui#> .
 
 <urn:sensorium:pluckface>
 	a lv2:Plugin ;
 	lv2:binary <pluckface.dylib>  ;
-	rdfs:seeAlso <pluckface.ttl> .
+	rdfs:seeAlso 	<pluckface.ttl> .
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+
 <urn:sensorium:pluckface>
     modgui:gui [
         modgui:resourcesDirectory <modgui> ;
@@ -20,48 +22,5 @@
             lv2:symbol "cv_out_meter" ;
         ] , [
             lv2:symbol "onset_indicator" ;
-        ] ;
-        modgui:brand "sensorium";
-        modgui:label "Pluckface";
-        modgui:model "boxy" ;
-        modgui:panel "10-sliders" ;
-        modgui:color "pink" ;
-        modgui:knob "silver" ;
-        modgui:port [
-            lv2:index 0 ;
-            lv2:symbol "onset_method" ;
-            lv2:name "Onset Method" ;
-        ] , [
-            lv2:index 1 ;
-            lv2:symbol "onset_sensitivity" ;
-            lv2:name "Sensitivity" ;
-        ] , [
-            lv2:index 2 ;
-            lv2:symbol "silence_threshold" ;
-            lv2:name "Silence Thrshld" ;
-        ] , [
-            lv2:index 3 ;
-            lv2:symbol "window_seconds" ;
-            lv2:name "Window Seconds" ;
-        ] , [
-            lv2:index 4 ;
-            lv2:symbol "scale_cv_out" ;
-            lv2:name "CV out Gain" ;
-        ] , [
-            lv2:index 5 ;
-            lv2:symbol "offset_cv_out" ;
-            lv2:name "CV Out Offset" ;
-        ] , [
-            lv2:index 6 ;
-            lv2:symbol "leaky_mix" ;
-            lv2:name "Window/Integrtr Mix" ;
-        ] , [
-            lv2:index 7 ;
-            lv2:symbol "leaky_decay_seconds" ;
-            lv2:name "Integrator Decay" ;
-        ] , [
-            lv2:index 8 ;
-            lv2:symbol "cv_smoothing" ;
-            lv2:name "CV Smooth .05-1s" ;
-        ] ;
+        ]
     ] .

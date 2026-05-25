@@ -154,7 +154,7 @@ function(event) {
             return;
         }
 
-        var hiddenSliders = [
+        /* var hiddenSliders = [
             { symbol: 'onset_method',         scope: '' },
             { symbol: 'onset_sensitivity',    scope: '' },
             { symbol: 'window_seconds',        scope: '' },
@@ -171,7 +171,7 @@ function(event) {
             if (hiddenSlider && hiddenSlider.length) {
                 hiddenSlider.addClass('pluckface-hidden-control');
             }
-        }
+        } */
 
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
