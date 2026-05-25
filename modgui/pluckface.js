@@ -154,25 +154,6 @@ function(event) {
             return;
         }
 
-        /* var hiddenSliders = [
-            { symbol: 'onset_method',         scope: '' },
-            { symbol: 'onset_sensitivity',    scope: '' },
-            { symbol: 'window_seconds',        scope: '' },
-            { symbol: 'leaky_mix',             scope: '' },
-            { symbol: 'leaky_decay_seconds',   scope: '' },
-            { symbol: 'cv_smoothing',          scope: '' },
-            { symbol: 'offset_cv_out',         scope: '' },
-            { symbol: 'scale_cv_out',          scope: '' },
-            { symbol: 'silence_threshold',     scope: '.mod-control-group ' }
-        ];
-        for (var s = 0; s < hiddenSliders.length; s++) {
-            var h = hiddenSliders[s];
-            var hiddenSlider = icon.find(h.scope + '.mod-slider-image[mod-port-symbol="' + h.symbol + '"]').closest('.mod-slider');
-            if (hiddenSlider && hiddenSlider.length) {
-                hiddenSlider.addClass('pluckface-hidden-control');
-            }
-        } */
-
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
         state.onsetIndicatorPending = false;
