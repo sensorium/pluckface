@@ -14,6 +14,7 @@ function(event) {
     // needs to complete before being cleared. EYES_HOLD_MS should be at least
     // as long as the CSS animation duration. Adjust if blinks feel truncated.
     // -------------------------------------------------------------------------
+    var LED_HOLD_MS = 120;
     var EYES_HOLD_MS = 150;
 
     var icon = event.icon;
@@ -31,6 +32,7 @@ function(event) {
                 // Paint scheduling
                 displayLastPaintMs: 0,
                 displayTimer: null,
+                onsetLedTimer: null,
 
                 // Last-painted values for change detection
                 paintedInputNorm: null,
@@ -82,11 +84,25 @@ function(event) {
         state.onsetCountPending = 0;
 
         // Only write to the LED on actual onsets — never write 0.
-        // The CSS transition decays back to 0 on its own.
+        // Then explicitly return it to zero so the CSS opacity transition can
+        // do the visible fade.
         if (count > 0) {
             var intensity = 1.0 - Math.exp(-count * 0.7);
             if (dom.onsetLed) {
                 dom.onsetLed.style.setProperty('--onset-intensity', String(intensity));
+                dom.onsetLed.classList.remove('active');
+                void dom.onsetLed.offsetWidth;
+                dom.onsetLed.classList.add('active');
+                if (state.onsetLedTimer) {
+                    clearTimeout(state.onsetLedTimer);
+                }
+                state.onsetLedTimer = setTimeout(function () {
+                    state.onsetLedTimer = null;
+                    if (dom.onsetLed) {
+                        dom.onsetLed.classList.remove('active');
+                        dom.onsetLed.style.setProperty('--onset-intensity', '0');
+                    }
+                }, LED_HOLD_MS);
             }
         }
 
@@ -173,6 +189,9 @@ function(event) {
         if (oldState && oldState.displayTimer) {
             clearTimeout(oldState.displayTimer);
         }
+        if (oldState && oldState.onsetLedTimer) {
+            clearTimeout(oldState.onsetLedTimer);
+        }
         if (oldState && oldState.footswitchObserver) {
             oldState.footswitchObserver.disconnect();
         }
@@ -191,6 +210,7 @@ function(event) {
         state.eyesActiveUntil = 0;
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
+        state.onsetLedTimer = null;
         resetPaintedState(state);
 
         if (dom.inputMask) {
@@ -200,6 +220,7 @@ function(event) {
             dom.cvMask.style.setProperty('--meter-fill', '0');
         }
         if (dom.onsetLed) {
+            dom.onsetLed.classList.remove('active');
             dom.onsetLed.style.setProperty('--onset-intensity', '0');
         }
         if (dom.faceEyes) {

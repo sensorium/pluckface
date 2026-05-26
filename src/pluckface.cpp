@@ -576,7 +576,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     {
       self->cv_trigger_out[i] = kCvTriggerHigh;
       self->trigger_samples_remaining--;
-      self->gui_onset_indicator_latch = 1;
     }
     else
     {
