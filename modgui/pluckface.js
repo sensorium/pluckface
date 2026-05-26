@@ -68,17 +68,19 @@ function(event) {
         state.paintedOnsetActive = active;
 
         if (dom.onsetLed) {
-            if (active) {
-                dom.onsetLed.classList.add('active');
-            } else {
-                dom.onsetLed.classList.remove('active');
-            }
+            dom.onsetLed.classList.toggle('active', active);
         }
         if (dom.faceEyes) {
-            if (active) {
-                dom.faceEyes.classList.add('active');
-            } else {
-                dom.faceEyes.classList.remove('active');
+            dom.faceEyes.classList.toggle('active', active);
+        }
+
+        if (active) {
+            state.onsetIndicatorPending = false;
+            // paintedOnsetActive stays true — matching what's in the DOM.
+            // Schedule a paint so the next cycle sees active=false vs painted=true
+            // and clears both elements.
+            if (!state.displayTimer) {
+                state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS);
             }
         }
     }
@@ -169,7 +171,7 @@ function(event) {
         paintFaceVisibility(dom, state);
 
         if (dom.footswitch) {
-            var footswitchObserver = new MutationObserver(function() {
+            var footswitchObserver = new MutationObserver(function () {
                 var state = getState(false);
                 if (!state) return;
                 state.paintedFootswitchOn = null;
