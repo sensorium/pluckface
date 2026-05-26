@@ -13,6 +13,7 @@ function(event) {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
                 onsetIndicatorPending: false,
+                onsetFollowUpNeeded: false,
                 displayLastPaintMs: 0,
                 displayTimer: null,
                 paintedInputNorm: null,
@@ -57,7 +58,7 @@ function(event) {
             return;
         }
         state[paintedKey] = value;
-        el.style.setProperty(name, value);
+        el.style.setProperty(name, String(value));
     }
 
     function paintOnsetLed(dom, state) {
@@ -68,18 +69,17 @@ function(event) {
         state.paintedOnsetActive = active;
 
         if (dom.onsetLed) {
-            if (active) {
-                dom.onsetLed.classList.add('active');
-            } else {
-                dom.onsetLed.classList.remove('active');
-            }
+            dom.onsetLed.classList.toggle('active', active);
         }
         if (dom.faceEyes) {
-            if (active) {
-                dom.faceEyes.classList.add('active');
-            } else {
-                dom.faceEyes.classList.remove('active');
-            }
+            dom.faceEyes.classList.toggle('active', active);
+        }
+
+        // Consume the flag so each onset produces exactly one lit frame.
+        // Signal flushDisplayPaint to schedule a follow-up that clears the LED.
+        if (active) {
+            state.onsetIndicatorPending = false;
+            state.onsetFollowUpNeeded = true;
         }
     }
 
@@ -118,6 +118,14 @@ function(event) {
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
+
+        // If paintOnsetLed consumed an onset flag, schedule one more paint to
+        // clear the LED. This happens after displayTimer is nulled so it isn't
+        // immediately overwritten.
+        if (state.onsetFollowUpNeeded) {
+            state.onsetFollowUpNeeded = false;
+            state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS);
+        }
     }
 
     function scheduleDisplayPaint(state) {
@@ -135,6 +143,7 @@ function(event) {
         state.paintedCv = null;
         state.paintedOnsetActive = null;
         state.paintedFootswitchOn = null;
+        state.onsetFollowUpNeeded = false;
     }
 
     if (event.type === 'start') {
@@ -153,25 +162,6 @@ function(event) {
         if (!hasRenderableUi(dom)) {
             return;
         }
-
-        /* var hiddenSliders = [
-            { symbol: 'onset_method',         scope: '' },
-            { symbol: 'onset_sensitivity',    scope: '' },
-            { symbol: 'window_seconds',        scope: '' },
-            { symbol: 'leaky_mix',             scope: '' },
-            { symbol: 'leaky_decay_seconds',   scope: '' },
-            { symbol: 'cv_smoothing',          scope: '' },
-            { symbol: 'offset_cv_out',         scope: '' },
-            { symbol: 'scale_cv_out',          scope: '' },
-            { symbol: 'silence_threshold',     scope: '.mod-control-group ' }
-        ];
-        for (var s = 0; s < hiddenSliders.length; s++) {
-            var h = hiddenSliders[s];
-            var hiddenSlider = icon.find(h.scope + '.mod-slider-image[mod-port-symbol="' + h.symbol + '"]').closest('.mod-slider');
-            if (hiddenSlider && hiddenSlider.length) {
-                hiddenSlider.addClass('pluckface-hidden-control');
-            }
-        } */
 
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;

@@ -13,6 +13,7 @@ function(event) {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
                 onsetIndicatorPending: false,
+                onsetFollowUpNeeded: false,
                 displayLastPaintMs: 0,
                 displayTimer: null,
                 paintedInputNorm: null,
@@ -57,7 +58,7 @@ function(event) {
             return;
         }
         state[paintedKey] = value;
-        el.style.setProperty(name, value);
+        el.style.setProperty(name, String(value));
     }
 
     function paintOnsetLed(dom, state) {
@@ -74,14 +75,11 @@ function(event) {
             dom.faceEyes.classList.toggle('active', active);
         }
 
+        // Consume the flag so each onset produces exactly one lit frame.
+        // Signal flushDisplayPaint to schedule a follow-up that clears the LED.
         if (active) {
             state.onsetIndicatorPending = false;
-            // paintedOnsetActive stays true — matching what's in the DOM.
-            // Schedule a paint so the next cycle sees active=false vs painted=true
-            // and clears both elements.
-            if (!state.displayTimer) {
-                state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS);
-            }
+            state.onsetFollowUpNeeded = true;
         }
     }
 
@@ -120,6 +118,14 @@ function(event) {
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
+
+        // If paintOnsetLed consumed an onset flag, schedule one more paint to
+        // clear the LED. This happens after displayTimer is nulled so it isn't
+        // immediately overwritten.
+        if (state.onsetFollowUpNeeded) {
+            state.onsetFollowUpNeeded = false;
+            state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS);
+        }
     }
 
     function scheduleDisplayPaint(state) {
@@ -137,6 +143,7 @@ function(event) {
         state.paintedCv = null;
         state.paintedOnsetActive = null;
         state.paintedFootswitchOn = null;
+        state.onsetFollowUpNeeded = false;
     }
 
     if (event.type === 'start') {
@@ -171,7 +178,7 @@ function(event) {
         paintFaceVisibility(dom, state);
 
         if (dom.footswitch) {
-            var footswitchObserver = new MutationObserver(function () {
+            var footswitchObserver = new MutationObserver(function() {
                 var state = getState(false);
                 if (!state) return;
                 state.paintedFootswitchOn = null;
