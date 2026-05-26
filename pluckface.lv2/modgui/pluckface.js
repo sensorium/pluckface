@@ -4,21 +4,38 @@ function(event) {
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
 
+    // -------------------------------------------------------------------------
+    // ONSET LED: uses CSS custom property --onset-intensity (0.0-1.0) mapped to
+    // opacity. Verify the stylesheet wires this: opacity: var(--onset-intensity)
+    // CSS transition on opacity provides visual decay between frames — uncomment
+    // the transition in the stylesheet for this to work.
+    //
+    // FACE EYES: uses .active class toggle only — the 2-frame blink animation
+    // needs to complete before being cleared. EYES_HOLD_MS should be at least
+    // as long as the CSS animation duration. Adjust if blinks feel truncated.
+    // -------------------------------------------------------------------------
+    var EYES_HOLD_MS = 150;
+
     var icon = event.icon;
 
     function getState(createIfMissing) {
         var state = icon.data(UI_STATE_KEY);
         if (!state && createIfMissing) {
             state = {
+                // Pending values, accumulated between paints
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
-                onsetIndicatorPending: false,
-                onsetFollowUpNeeded: false,
+                onsetCountPending: 0,   // incremented on each rising edge of onset_indicator
+                eyesActiveUntil: 0,     // timestamp until which faceEyes stays active
+
+                // Paint scheduling
                 displayLastPaintMs: 0,
                 displayTimer: null,
+
+                // Last-painted values for change detection
                 paintedInputNorm: null,
                 paintedCv: null,
-                paintedOnsetActive: null,
+                paintedEyesActive: null,     // boolean
                 paintedFootswitchOn: null
             };
             icon.data(UI_STATE_KEY, state);
@@ -30,7 +47,6 @@ function(event) {
         if (state.dom) {
             return state.dom;
         }
-
         var dom = {
             inputMask: null,
             cvMask: null,
@@ -39,7 +55,6 @@ function(event) {
             face: icon.find('.pluckface-face')[0],
             footswitch: icon.find('.mod-footswitch')[0]
         };
-
         var inputMeter = icon.find('.pluckface-input-meter')[0];
         var cvMeter = icon.find('.pluckface-cv-meter')[0];
         dom.inputMask = inputMeter ? inputMeter.querySelector('.pluckface-input-meter-mask') : null;
@@ -62,25 +77,32 @@ function(event) {
     }
 
     function paintOnsetLed(dom, state) {
-        var active = state.onsetIndicatorPending;
-        if (state.paintedOnsetActive === active) {
-            return;
-        }
-        state.paintedOnsetActive = active;
+        var now = Date.now();
+        var count = state.onsetCountPending;
+        state.onsetCountPending = 0;
 
-        if (dom.onsetLed) {
-            dom.onsetLed.classList.toggle('active', active);
-        }
-        if (dom.faceEyes) {
-            dom.faceEyes.classList.toggle('active', active);
+        // Only write to the LED on actual onsets — never write 0.
+        // The CSS transition decays back to 0 on its own.
+        if (count > 0) {
+            var intensity = 1.0 - Math.exp(-count * 0.7);
+            if (dom.onsetLed) {
+                dom.onsetLed.style.setProperty('--onset-intensity', String(intensity));
+            }
         }
 
-        // Consume the flag so each onset produces exactly one lit frame.
-        // Signal flushDisplayPaint to schedule a follow-up that clears the LED.
-        if (active) {
-            state.onsetIndicatorPending = false;
-            state.onsetFollowUpNeeded = true;
+        // Eyes hold logic unchanged...
+        if (count > 0) {
+            state.eyesActiveUntil = now + EYES_HOLD_MS;
         }
+        var eyesActive = now < state.eyesActiveUntil;
+        if (state.paintedEyesActive !== eyesActive) {
+            state.paintedEyesActive = eyesActive;
+            if (dom.faceEyes) {
+                dom.faceEyes.classList.toggle('active', eyesActive);
+            }
+        }
+
+        return eyesActive;
     }
 
     function paintFaceVisibility(dom, state) {
@@ -89,7 +111,6 @@ function(event) {
             return;
         }
         state.paintedFootswitchOn = isOn;
-
         if (dom.face) {
             dom.face.classList.toggle('pedal-off', !isOn);
         }
@@ -114,16 +135,14 @@ function(event) {
         if (dom.cvMask) {
             setCssVarIfChanged(dom.cvMask, '--meter-fill', cv, state, 'paintedCv');
         }
-        paintOnsetLed(dom, state);
+
+        var eyesStillActive = paintOnsetLed(dom, state);
 
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
 
-        // If paintOnsetLed consumed an onset flag, schedule one more paint to
-        // clear the LED. This happens after displayTimer is nulled so it isn't
-        // immediately overwritten.
-        if (state.onsetFollowUpNeeded) {
-            state.onsetFollowUpNeeded = false;
+        // Keep ticking while the eyes hold period is running.
+        if (eyesStillActive) {
             state.displayTimer = setTimeout(flushDisplayPaint, INPUT_METER_INTERVAL_MS);
         }
     }
@@ -141,10 +160,13 @@ function(event) {
     function resetPaintedState(state) {
         state.paintedInputNorm = null;
         state.paintedCv = null;
-        state.paintedOnsetActive = null;
+        state.paintedEyesActive = null;
         state.paintedFootswitchOn = null;
-        state.onsetFollowUpNeeded = false;
     }
+
+    // -------------------------------------------------------------------------
+    // Event handling
+    // -------------------------------------------------------------------------
 
     if (event.type === 'start') {
         var oldState = getState(false);
@@ -165,20 +187,29 @@ function(event) {
 
         state.inputPendingDb = -90.0;
         state.cvPendingValue = 0.0;
-        state.onsetIndicatorPending = false;
+        state.onsetCountPending = 0;
+        state.eyesActiveUntil = 0;
         state.displayLastPaintMs = Date.now();
         state.displayTimer = null;
         resetPaintedState(state);
+
         if (dom.inputMask) {
             dom.inputMask.style.setProperty('--meter-fill', '0');
         }
         if (dom.cvMask) {
             dom.cvMask.style.setProperty('--meter-fill', '0');
         }
+        if (dom.onsetLed) {
+            dom.onsetLed.style.setProperty('--onset-intensity', '0');
+        }
+        if (dom.faceEyes) {
+            dom.faceEyes.classList.remove('active');
+        }
+
         paintFaceVisibility(dom, state);
 
         if (dom.footswitch) {
-            var footswitchObserver = new MutationObserver(function() {
+            var footswitchObserver = new MutationObserver(function () {
                 var state = getState(false);
                 if (!state) return;
                 state.paintedFootswitchOn = null;
@@ -186,13 +217,6 @@ function(event) {
             });
             footswitchObserver.observe(dom.footswitch, { attributes: true, attributeFilter: ['class'] });
             state.footswitchObserver = footswitchObserver;
-        }
-
-        if (dom.onsetLed) {
-            dom.onsetLed.classList.remove('active');
-        }
-        if (dom.faceEyes) {
-            dom.faceEyes.classList.remove('active');
         }
         return;
     }
@@ -225,11 +249,11 @@ function(event) {
     }
 
     if (symbol === 'onset_indicator') {
-        var onsetActive = numericValue > 0.5;
-        if (state.onsetIndicatorPending === onsetActive) {
-            return;
+        // Only count rising edges — the plugin's 0 reset events are ignored.
+        // The count accumulator handles any onset rate correctly.
+        if (numericValue > 0.5) {
+            state.onsetCountPending++;
+            scheduleDisplayPaint(state);
         }
-        state.onsetIndicatorPending = onsetActive;
-        scheduleDisplayPaint(state);
     }
 }
