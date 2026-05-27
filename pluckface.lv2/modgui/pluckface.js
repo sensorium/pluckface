@@ -7,8 +7,8 @@ function(event) {
     var UI_STATE_KEY = 'pluckfaceUi';
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
-    var BLINK_HOLD_MS = 120;   // how long eyes stay closed after an onset
-    var ONSET_LED_HOLD_MS = 100;
+    var BLINK_HOLD_MS = 60;   // how long eyes stay closed after an onset
+    var ONSET_LED_HOLD_MS = 60;
     var icon = event.icon;
 
     // -------------------------------------------------------------------------
@@ -28,6 +28,7 @@ function(event) {
                 paintedBlinkActive: null,
                 paintedFootswitchOn: null,
                 footswitchObserver: null,
+                lastOnsetCount: 0.0,
                 dom: null
             };
             icon.data(UI_STATE_KEY, state);
@@ -224,7 +225,7 @@ function(event) {
 
     if (symbol === 'onset_indicator') {
         // Rising edge only — ignore the plugin's 0 reset
-        if (numericValue > 0.5) {
+        if ( numericValue !== state.lastOnsetCount) {
             flashOnsetLed(dom, state);  // paint LED immediately, no timer
             blinkEyes(dom, state);       // open eyes with their own hold timer
         }

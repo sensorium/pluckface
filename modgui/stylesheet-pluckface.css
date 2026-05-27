@@ -50,7 +50,7 @@ proportion is 598/1216 = 0.491776315789474
     position:absolute;
     will-change: opacity;
     opacity:0;
-    transition:opacity 150ms ease-out;
+    /* transition:opacity 20ms ease-out; */
     z-index:11;
     pointer-events: none;
     width: 145.07px;
@@ -59,6 +59,7 @@ proportion is 598/1216 = 0.491776315789474
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.active {
     opacity:1;
+    /* transition:opacity 20ms ease-out; */
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.pedal-off {
@@ -179,7 +180,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-led.active {
     opacity: 1;
-    transition: opacity 80ms ease-in;   /* snap ON */
+    transition: opacity 20ms ease-out;   /* snap ON */
 }
 
 

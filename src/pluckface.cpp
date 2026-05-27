@@ -138,8 +138,7 @@ typedef struct
   uint32_t gui_meter_sample_counter;
   float gui_cv_out_meter_value;
   float last_published_cv_meter;
-  uint8_t gui_onset_indicator_latch;
-  float last_published_onset_indicator;
+  float onset_indicator_count;
   // Cached aubio setter values — only call setters when these change,
   // avoiding unnecessary work in the DSP thread every run() call.
   float last_silence_threshold;
@@ -185,14 +184,6 @@ publish_gui_meters(Pluckface *self)
       self->last_published_cv_meter = quantized;
     }
   }
-  // In publish_gui_meters(), drop onset_indicator entirely —
-  // or just handle the reset-to-0 there (since 10Hz is fine for the reset):
-  if (self->onset_indicator && self->last_published_onset_indicator != 0.0f)
-  {
-    *self->onset_indicator = 0.0f;
-    self->last_published_onset_indicator = 0.0f;
-  }
-  self->gui_onset_indicator_latch = 0;
 }
 
 static LV2_Handle
@@ -265,8 +256,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->gui_meter_sample_counter = 0;
   self->gui_cv_out_meter_value = 0.0f;
   self->last_published_cv_meter = -1.0f; // Force first update
-  self->gui_onset_indicator_latch = 0;
-  self->last_published_onset_indicator = -1.0f; // Force first update
+  self->onset_indicator_count = 0.0f;
   self->last_silence_threshold = -999.0f;       // Force first aubio setter call
   self->last_aubio_threshold = -999.0f;
   self->last_method_index = -1;
@@ -353,11 +343,10 @@ activate(LV2_Handle instance)
     return;
   }
   self->gui_meter_sample_counter = 0;
-  self->gui_onset_indicator_latch = 0;
+  self->onset_indicator_count = 0.0f;
   self->throttle_counter = 0;
   self->last_published_cv_meter = -1.0f;
   self->last_published_input_db = -999.0f;
-  self->last_published_onset_indicator = -1.0f;
   publish_gui_meters(self);
 }
 
@@ -533,7 +522,14 @@ run(LV2_Handle instance, uint32_t n_samples)
 
     if (current_onset)
     {
-      self->gui_onset_indicator_latch = 1;
+      // Increment the monotonic counter and publish immediately.
+      // mod-host observes a durable value change on every onset — no
+      // pulse-width race against the 10Hz meter tick.
+      self->onset_indicator_count += 1.0f;
+      if (self->onset_indicator)
+      {
+        *self->onset_indicator = self->onset_indicator_count;
+      }
     }
 
     self->leaky_onset_level = leak * self->leaky_onset_level + (float)current_onset;
@@ -580,16 +576,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     {
       self->cv_trigger_out[i] = kCvTriggerLow;
     }
-  }
-
-  if (self->gui_onset_indicator_latch)
-  {
-    if (self->onset_indicator && self->last_published_onset_indicator != 1.0f)
-    {
-      *self->onset_indicator = 1.0f;
-      self->last_published_onset_indicator = 1.0f;
-    }
-    self->gui_onset_indicator_latch = 0;
   }
 
   self->gui_meter_sample_counter += n_samples;
