@@ -7,7 +7,8 @@ function(event) {
     var UI_STATE_KEY = 'pluckfaceUi';
     var PAINT_EPSILON = 0.001;
     var INPUT_DB_EPSILON = 0.1;
-    var EYES_HOLD_MS = 200;   // how long eyes stay open after an onset
+    var BLINK_HOLD_MS = 120;   // how long eyes stay closed after an onset
+    var ONSET_LED_HOLD_MS = 100;
     var icon = event.icon;
 
     // -------------------------------------------------------------------------
@@ -19,13 +20,12 @@ function(event) {
             state = {
                 inputPendingDb: -90.0,
                 cvPendingValue: 0.0,
-                onsetCountPending: 0,       // rising edges accumulated since last paint
                 meterLastPaintMs: 0,
                 meterTimer: null,     // setTimeout handle for meter repaints
-                eyesTimer: null,     // setTimeout handle for clearing eyes
+                blinkTimer: null,     // setTimeout handle for clearing blink
                 paintedInputNorm: null,
                 paintedCv: null,
-                paintedEyesActive: null,
+                paintedBlinkActive: null,
                 paintedFootswitchOn: null,
                 footswitchObserver: null,
                 dom: null
@@ -95,8 +95,6 @@ function(event) {
         state.meterTimer = setTimeout(flushMeterPaint, delay);
     }
 
-
-
     // -------------------------------------------------------------------------
     // Onset LED — called directly on each onset event, not via the meter timer
     // -------------------------------------------------------------------------
@@ -114,33 +112,33 @@ function(event) {
             var s = getState(false);
             if (!s || !bindDom(s).onsetLed) return;
             bindDom(s).onsetLed.classList.remove('active');  // triggers fade-out transition
-        }, EYES_HOLD_MS);   // reuse the same hold constant, or define LED_HOLD_MS separately
+        }, ONSET_LED_HOLD_MS);   // reuse the same hold constant, or define LED_HOLD_MS separately
     }
 
     // -------------------------------------------------------------------------
-    // Eyes — simple open/close with a dedicated hold timer, fully independent
+    // Eyes — simple close/open (blink) with a dedicated hold timer, fully independent
     // -------------------------------------------------------------------------
-    function openEyes(dom, state) {
-        // Cancel any pending close
-        if (state.eyesTimer) {
-            clearTimeout(state.eyesTimer);
-            state.eyesTimer = null;
+    function blinkEyes(dom, state) {
+        // Cancel any pending open
+        if (state.blinkTimer) {
+            clearTimeout(state.blinkTimer);
+            state.blinkTimer = null;
         }
 
-        if (state.paintedEyesActive !== true) {
-            state.paintedEyesActive = true;
+        if (state.paintedBlinkActive !== true) {
+            state.paintedBlinkActive = true;
             if (dom.faceEyes) { dom.faceEyes.classList.add('active'); }
         }
 
-        // Schedule close after hold period
-        state.eyesTimer = setTimeout(function () {
-            state.eyesTimer = null;
+        // Schedule open after hold period
+        state.blinkTimer = setTimeout(function () {
+            state.blinkTimer = null;
             var s = getState(false);
             if (!s) { return; }
-            s.paintedEyesActive = false;
+            s.paintedBlinkActive = false;
             var d = bindDom(s);
             if (d.faceEyes) { d.faceEyes.classList.remove('active'); }
-        }, EYES_HOLD_MS);
+        }, BLINK_HOLD_MS);
     }
 
     // -------------------------------------------------------------------------
@@ -162,7 +160,7 @@ function(event) {
         var oldState = getState(false);
         if (oldState) {
             if (oldState.meterTimer) { clearTimeout(oldState.meterTimer); }
-            if (oldState.eyesTimer) { clearTimeout(oldState.eyesTimer); }
+            if (oldState.blinkTimer) { clearTimeout(oldState.blinkTimer); }
             if (oldState.footswitchObserver) { oldState.footswitchObserver.disconnect(); }
         }
         icon.removeData(UI_STATE_KEY);
@@ -228,7 +226,7 @@ function(event) {
         // Rising edge only — ignore the plugin's 0 reset
         if (numericValue > 0.5) {
             flashOnsetLed(dom, state);  // paint LED immediately, no timer
-            openEyes(dom, state);       // open eyes with their own hold timer
+            blinkEyes(dom, state);       // open eyes with their own hold timer
         }
         return;
     }
