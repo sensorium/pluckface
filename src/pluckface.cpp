@@ -92,7 +92,6 @@ static const float kCvThrottleHz = 100.0f;
 // parameter a user would notice, while dramatically reducing GUI feedback traffic.
 static const float kCvOutSteps = 255.0f; // 256 levels: 0/255, 1/255 … 255/255
 
-
 typedef struct
 {
   aubio_onset_t *onsets[NUM_ONSET_METHODS];
@@ -145,14 +144,14 @@ typedef struct
   // avoiding unnecessary work in the DSP thread every run() call.
   float last_silence_threshold;
   float last_aubio_threshold;
-  int   last_method_index;
+  int last_method_index;
   // CV output throttle — EMA and quantisation computed once per tick,
   // held constant across the block. Eliminates per-sample DSP work and
   // gives mod-host a stable buffer value to sample for CV addressing.
   uint32_t throttle_counter;
   uint32_t throttle_interval_samples;
-  float    held_cv_out;
-  float    held_cv_inverted_out;
+  float held_cv_out;
+  float held_cv_inverted_out;
   // param_alpha is constant (depends only on fixed constants and samplerate),
   // computed once at instantiate. cached_alpha is recomputed only when the
   // cv_smoothing knob moves.
@@ -186,14 +185,12 @@ publish_gui_meters(Pluckface *self)
       self->last_published_cv_meter = quantized;
     }
   }
-  if (self->onset_indicator)
+  // In publish_gui_meters(), drop onset_indicator entirely —
+  // or just handle the reset-to-0 there (since 10Hz is fine for the reset):
+  if (self->onset_indicator && self->last_published_onset_indicator != 0.0f)
   {
-    const float current_val = self->gui_onset_indicator_latch ? 1.0f : 0.0f;
-    if (current_val != self->last_published_onset_indicator)
-    {
-      *self->onset_indicator = current_val;
-      self->last_published_onset_indicator = current_val;
-    }
+    *self->onset_indicator = 0.0f;
+    self->last_published_onset_indicator = 0.0f;
   }
   self->gui_onset_indicator_latch = 0;
 }
@@ -270,20 +267,20 @@ instantiate(const LV2_Descriptor *descriptor,
   self->last_published_cv_meter = -1.0f; // Force first update
   self->gui_onset_indicator_latch = 0;
   self->last_published_onset_indicator = -1.0f; // Force first update
-  self->last_silence_threshold = -999.0f; // Force first aubio setter call
-  self->last_aubio_threshold   = -999.0f;
-  self->last_method_index      = -1;
+  self->last_silence_threshold = -999.0f;       // Force first aubio setter call
+  self->last_aubio_threshold = -999.0f;
+  self->last_method_index = -1;
   self->throttle_interval_samples = std::max(1u, (uint32_t)(self->samplerate / kCvThrottleHz + 0.5f));
-  self->throttle_counter          = 0;
-  self->held_cv_out               = 0.0f;
-  self->held_cv_inverted_out      = 1.0f;
+  self->throttle_counter = 0;
+  self->held_cv_out = 0.0f;
+  self->held_cv_inverted_out = 1.0f;
   // param_alpha: depends only on compile-time constants and samplerate, so
   // compute once here rather than every run() call.
   self->param_alpha = 1.0f - expf(-(float)self->throttle_interval_samples /
-                                   (kCvParamRampSeconds * self->samplerate));
+                                  (kCvParamRampSeconds * self->samplerate));
   // cached_alpha and last_cv_smoothing: seed with an impossible value so the
   // first run() call always computes and caches a real alpha.
-  self->cached_alpha      = 1.0f;
+  self->cached_alpha = 1.0f;
   self->last_cv_smoothing = -1.0f;
   return (LV2_Handle)self;
 }
@@ -388,7 +385,8 @@ run(LV2_Handle instance, uint32_t n_samples)
       for (uint32_t i = 0; i < n_samples; i++)
       {
         self->cv_out[i] = 0.0f;
-        if (self->cv_inverted_out) self->cv_inverted_out[i] = 1.0f;
+        if (self->cv_inverted_out)
+          self->cv_inverted_out[i] = 1.0f;
         if (self->cv_trigger_out)
         {
           self->cv_trigger_out[i] = kCvTriggerLow;
@@ -427,10 +425,10 @@ run(LV2_Handle instance, uint32_t n_samples)
       alpha = 1.0f - expf(-(float)self->throttle_interval_samples / (smoothing_seconds * self->samplerate));
       alpha = std::max(0.000001f, std::min(1.0f, alpha));
     }
-    self->cached_alpha      = alpha;
+    self->cached_alpha = alpha;
     self->last_cv_smoothing = cv_smoothing;
   }
-  const float alpha       = self->cached_alpha;
+  const float alpha = self->cached_alpha;
   const float param_alpha = self->param_alpha;
   const float cv_out_min = 0.0f;
   const float cv_out_max = 1.0f;
@@ -496,7 +494,8 @@ run(LV2_Handle instance, uint32_t n_samples)
 
   // Determine current window size in cells
   int16_t window_cells = (int16_t)floorf(std::min((float)WINDOW_SECONDS_MAX, *self->window_seconds) * self->samplerate / self->hopsize);
-  if (window_cells < 1) window_cells = 1;
+  if (window_cells < 1)
+    window_cells = 1;
 
   // Convert decay time (seconds) into hop-wise exponential leak factor.
   const float min_decay_seconds = 0.001f;
@@ -553,23 +552,23 @@ run(LV2_Handle instance, uint32_t n_samples)
   {
     self->throttle_counter = 0;
 
-    self->metric_lp    += alpha       * (self->target_metric - self->metric_lp);
-    self->ramped_scale += param_alpha * (scale_target        - self->ramped_scale);
-    self->ramped_offset+= param_alpha * (offset_target       - self->ramped_offset);
+    self->metric_lp += alpha * (self->target_metric - self->metric_lp);
+    self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
+    self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
 
     float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
     cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
     self->gui_cv_out_meter_value = cv_value; // unquantised, for the display meter
 
-    const float cv_quantized      = roundf(cv_value * kCvOutSteps) / kCvOutSteps;
-    self->held_cv_out          = cv_quantized;
+    const float cv_quantized = roundf(cv_value * kCvOutSteps) / kCvOutSteps;
+    self->held_cv_out = cv_quantized;
     self->held_cv_inverted_out = 1.0f - cv_quantized;
   }
 
   // Fill the block with the held CV values and handle trigger output.
   for (uint32_t i = 0; i < n_samples; i++)
   {
-    self->cv_out[i]          = self->held_cv_out;
+    self->cv_out[i] = self->held_cv_out;
     self->cv_inverted_out[i] = self->held_cv_inverted_out;
 
     if (self->trigger_samples_remaining > 0)
@@ -581,6 +580,16 @@ run(LV2_Handle instance, uint32_t n_samples)
     {
       self->cv_trigger_out[i] = kCvTriggerLow;
     }
+  }
+
+  if (self->gui_onset_indicator_latch)
+  {
+    if (self->onset_indicator && self->last_published_onset_indicator != 1.0f)
+    {
+      *self->onset_indicator = 1.0f;
+      self->last_published_onset_indicator = 1.0f;
+    }
+    self->gui_onset_indicator_latch = 0;
   }
 
   self->gui_meter_sample_counter += n_samples;
