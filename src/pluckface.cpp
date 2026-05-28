@@ -58,7 +58,8 @@ typedef enum
   PLUCKFACE_INPUT = 12,
   PLUCKFACE_INPUT_LEVEL_DB = 13,
   PLUCKFACE_CV_OUT_METER = 14,
-  PLUCKFACE_ONSET_INDICATOR = 15
+  PLUCKFACE_ONSET_INDICATOR = 15,
+  PLUCKFACE_AUTO_NORMALIZE = 16
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -151,6 +152,13 @@ typedef struct
   float param_alpha;
   float cached_alpha;
   float last_cv_smoothing;
+  // Auto-normalisation: peak/floor followers track the observed range of
+  // metric_lp and derive scale/offset to map it to [0, 1].
+  const float *auto_normalize;
+  float auto_norm_max;        // peak follower
+  float auto_norm_min;        // floor follower
+  float auto_norm_coeff;      // per-block drift coefficient (cached, 20s decay)
+  float last_auto_normalize;  // previous toggle value, for edge detection
 } Pluckface;
 
 static void
@@ -266,6 +274,10 @@ instantiate(const LV2_Descriptor *descriptor,
   // first run() call always computes and caches a real alpha.
   self->cached_alpha = 1.0f;
   self->last_cv_smoothing = -1.0f;
+  self->auto_norm_max = 0.0f;
+  self->auto_norm_min = 0.0f;
+  self->auto_norm_coeff = 1.0f;
+  self->last_auto_normalize = 0.0f;
   return (LV2_Handle)self;
 }
 
@@ -325,6 +337,9 @@ connect_port(LV2_Handle instance,
   case PLUCKFACE_ONSET_INDICATOR:
     self->onset_indicator = (float *)data;
     break;
+  case PLUCKFACE_AUTO_NORMALIZE:
+    self->auto_normalize = (const float *)data;
+    break;
   }
 }
 
@@ -362,7 +377,8 @@ run(LV2_Handle instance, uint32_t n_samples)
       !self->cv_inverted_out ||
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
-      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing)
+      !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
+      !self->auto_normalize)
   {
     if (self && self->cv_out)
     {
@@ -416,6 +432,10 @@ run(LV2_Handle instance, uint32_t n_samples)
     // param_alpha depends on block size; recompute together.
     self->param_alpha = 1.0f - expf(-(float)n_samples /
                                     (kCvParamRampSeconds * self->samplerate));
+    // auto-norm drift coefficient: same expf pattern, hardcoded 20s decay.
+    const float kAutoNormDecaySeconds = 20.0f;
+    self->auto_norm_coeff = 1.0f - expf(-(float)n_samples /
+                                        (kAutoNormDecaySeconds * self->samplerate));
     self->last_n_samples = n_samples;
   }
   const float alpha = self->cached_alpha;
@@ -546,7 +566,61 @@ run(LV2_Handle instance, uint32_t n_samples)
   self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
   self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
 
-  float cv_value = (self->metric_lp * self->ramped_scale) + self->ramped_offset;
+  const bool auto_norm_on = (*self->auto_normalize > 0.5f);
+
+  // Detect 0→1 edge: reset both trackers to the current metric value so the
+  // followers start fresh rather than inheriting stale history.
+  if (auto_norm_on && self->last_auto_normalize < 0.5f)
+  {
+    self->auto_norm_max = self->metric_lp;
+    self->auto_norm_min = self->metric_lp;
+  }
+  self->last_auto_normalize = auto_norm_on ? 1.0f : 0.0f;
+
+  // Update peak/floor followers only while auto-norm is active.
+  // Instant attack on new extremes; slow drift back toward the signal
+  // (20s time constant, coefficient cached in block-size guard above).
+  if (auto_norm_on)
+  {
+    if (self->metric_lp > self->auto_norm_max)
+      self->auto_norm_max = self->metric_lp;
+    else
+      self->auto_norm_max += self->auto_norm_coeff * (self->metric_lp - self->auto_norm_max);
+
+    if (self->metric_lp < self->auto_norm_min)
+      self->auto_norm_min = self->metric_lp;
+    else
+      self->auto_norm_min += self->auto_norm_coeff * (self->metric_lp - self->auto_norm_min);
+  }
+
+  // Derive effective scale and offset.
+  // Auto-norm: map [tracked_min, tracked_max] → [0, 1].
+  // Manual:    use the user's ramped scale/offset as before.
+  static const float kAutoNormMinRange = 0.001f;
+  float effective_scale, effective_offset;
+  if (auto_norm_on)
+  {
+    const float range = self->auto_norm_max - self->auto_norm_min;
+    if (range > kAutoNormMinRange)
+    {
+      effective_scale  = 1.0f / range;
+      effective_offset = -self->auto_norm_min * effective_scale;
+    }
+    else
+    {
+      // Range too small yet (e.g. just after reset) — pass through unscaled
+      // until the trackers have observed enough signal to work with.
+      effective_scale  = 1.0f;
+      effective_offset = 0.0f;
+    }
+  }
+  else
+  {
+    effective_scale  = self->ramped_scale;
+    effective_offset = self->ramped_offset;
+  }
+
+  float cv_value = (self->metric_lp * effective_scale) + effective_offset;
   cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
   self->gui_cv_out_meter_value = cv_value; // unquantised, for the display meter
 
