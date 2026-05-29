@@ -8,7 +8,7 @@ proportion is 598/1216 = 0.491776315789474
 /* = CONTAINER
 ================================================ */
 .mod-pedal-boxy{{{cns}}} {
-    background-image:url(/resources/pedals/pluck-base8.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-base9.png{{{ns}}});
     background-position:center center;
     background-repeat:no-repeat;
     background-size:598px 431px;
@@ -270,7 +270,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob { left:537px; top:235px; width:40px; }
-.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob { left:537px; top:110px; width:40px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob { left:537px; top:133px; width:40px; }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .mod-knob-image {
@@ -391,4 +391,21 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 
 .mod-pedal-boxy{{{cns}}} .mod-slider .mod-slider-image:hover {
     cursor:pointer;
+}
+
+
+/* AUTO-NORMALISE SWITCH */
+
+.mod-pedal-boxy{{{cns}}} .pluckface-auto-normalise-switch {
+    background-image: url(/resources/pedals/sliding-switch-horizontal-industrial-sprite-100x66.png{{{ns}}});
+    position:absolute;
+    left:510px;
+    top:43px;
+    width:49px;
+    height:32px;
+    background-repeat:no-repeat;
+    background-size:auto 32px;
+    background-position:left top;
+    cursor:pointer;
+    z-index:120;
 }

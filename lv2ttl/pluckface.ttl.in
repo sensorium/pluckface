@@ -283,8 +283,8 @@
 	], [
   a lv2:InputPort, lv2:ControlPort ;
   lv2:index 16 ;
-  lv2:symbol "auto_normalize" ;
-  lv2:name "Auto Normalize" ;
+  lv2:symbol "auto_normalise" ;
+  lv2:name "Auto Normalise" ;
   lv2:default 0 ;
   lv2:minimum 0 ;
   lv2:maximum 1 ;
