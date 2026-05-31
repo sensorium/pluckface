@@ -80,7 +80,7 @@ static const float kOnsetSensitivityMax = 1.0f;
 static const float kCvTriggerLow = 0.0f;
 static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.12f;
-static const float kCvParamRampSeconds = 0.01f;
+static const float kCvParamRampSeconds = 0.05f;
 static const float kGuiMeterHz = 10.0f;
 // Minimum change in cv_out required to update the output buffer.
 // mod-host reads buffer[0] once per JACK block for CV addressing and fires
@@ -463,14 +463,7 @@ run(LV2_Handle instance, uint32_t n_samples)
   const float cv_out_min = 0.0f;
   const float cv_out_max = 1.0f;
 
-  const float scale_target = *self->scale_cv_out;
-  const float offset_target = *self->offset_cv_out;
-  if (!self->cv_params_initialized)
-  {
-    self->ramped_scale = scale_target;
-    self->ramped_offset = offset_target;
-    self->cv_params_initialized = true;
-  }
+
 
   // Fill the ring buffer and estimate input level for metering.
   double sum_squares = 0.0;
@@ -583,8 +576,6 @@ run(LV2_Handle instance, uint32_t n_samples)
   // buffer[0] once per block for CV addressing, so block rate is both the
   // finest granularity that matters and the natural update interval.
   self->metric_lp += alpha * (self->target_metric - self->metric_lp);
-  self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
-  self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
 
   const bool auto_norm_on = (*self->auto_normalize > 0.5f);
 
@@ -613,32 +604,45 @@ run(LV2_Handle instance, uint32_t n_samples)
       self->auto_norm_min += self->auto_norm_coeff * (self->metric_lp - self->auto_norm_min);
   }
 
-  // Derive effective scale and offset.
-  // Auto-norm: map [tracked_min, tracked_max] → [0, 1].
-  // Manual:    use the user's ramped scale/offset as before.
-  static const float kAutoNormMinRange = 0.001f;
-  float effective_scale, effective_offset;
+  // Derive target scale and offset.
+  float scale_target;
+  float offset_target;
   if (auto_norm_on)
   {
+    static const float kAutoNormMinRange = 0.001f;
     const float range = self->auto_norm_max - self->auto_norm_min;
     if (range > kAutoNormMinRange)
     {
-      effective_scale = 1.0f / range;
-      effective_offset = -self->auto_norm_min * effective_scale;
+      scale_target = 1.0f / range;
+      offset_target = -self->auto_norm_min * scale_target;
     }
     else
     {
-      // Range too small yet (e.g. just after reset) — pass through unscaled
-      // until the trackers have observed enough signal to work with.
-      effective_scale = 1.0f;
-      effective_offset = 0.0f;
+      scale_target = 1.0f;
+      offset_target = 0.0f;
     }
   }
   else
   {
-    effective_scale = self->ramped_scale;
-    effective_offset = self->ramped_offset;
+    scale_target = *self->scale_cv_out;
+    offset_target = *self->offset_cv_out;
   }
+
+  // Initialize immediately or ramp smoothly toward the target parameters.
+  if (!self->cv_params_initialized)
+  {
+    self->ramped_scale = scale_target;
+    self->ramped_offset = offset_target;
+    self->cv_params_initialized = true;
+  }
+  else
+  {
+    self->ramped_scale += param_alpha * (scale_target - self->ramped_scale);
+    self->ramped_offset += param_alpha * (offset_target - self->ramped_offset);
+  }
+
+  const float effective_scale = self->ramped_scale;
+  const float effective_offset = self->ramped_offset;
   float cv_value = (self->metric_lp * effective_scale) + effective_offset;
   cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
   self->gui_cv_out_meter_value = cv_value; // unquantised, for the display meter
@@ -647,17 +651,39 @@ run(LV2_Handle instance, uint32_t n_samples)
   // This suppresses EMA noise-floor drift, which would otherwise trigger a
   // param_set message from mod-host every block when the port is CV-addressed
   // and the signal is stable.
+  float prev_cv = self->last_written_cv_out;
+  float prev_inv = self->last_written_cv_inverted_out;
+
   if (fabsf(cv_value - self->last_written_cv_out) >= kCvDeadBand)
   {
     self->last_written_cv_out = cv_value;
     self->last_written_cv_inverted_out = 1.0f - cv_value;
   }
 
-  // Fill the block with the current CV values and handle trigger output.
+  float target_cv = self->last_written_cv_out;
+  float target_inv = self->last_written_cv_inverted_out;
+
+  // Snap instantly on first run to avoid interpolating from out-of-bounds seed value
+  if (prev_cv < 0.0f)
+  {
+    prev_cv = target_cv;
+    prev_inv = target_inv;
+  }
+
+  float cv_step = n_samples > 0 ? (target_cv - prev_cv) / (float)n_samples : 0.0f;
+  float inv_step = n_samples > 0 ? (target_inv - prev_inv) / (float)n_samples : 0.0f;
+
+  float current_cv = prev_cv;
+  float current_inv = prev_inv;
+
+  // Fill the block with interpolated CV values and handle trigger output.
   for (uint32_t i = 0; i < n_samples; i++)
   {
-    self->cv_out[i] = self->last_written_cv_out;
-    self->cv_inverted_out[i] = self->last_written_cv_inverted_out;
+    current_cv += cv_step;
+    current_inv += inv_step;
+
+    self->cv_out[i] = current_cv;
+    self->cv_inverted_out[i] = current_inv;
 
     if (self->trigger_samples_remaining > 0)
     {
