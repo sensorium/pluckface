@@ -74,7 +74,7 @@
   lv2:index 1 ;
   lv2:symbol "onset_sensitivity" ;
   lv2:name "Sensitivity";
-  lv2:default 0.523 ;
+  lv2:default 0.5 ;
   lv2:minimum 0.0 ;
   lv2:maximum 1.0 ;
   lv2:scalePoint [
@@ -152,6 +152,10 @@
   lv2:default -0.5 ;
   lv2:minimum -2.0 ;
   lv2:maximum 1.0 ;
+  lv2:scalePoint [
+  rdfs:label "-2" ;
+  rdf:value -2.0
+  ];
   lv2:scalePoint [
   rdfs:label "-1" ;
   rdf:value -1.0
