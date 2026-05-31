@@ -88,6 +88,7 @@ static const float kGuiMeterHz = 10.0f;
 // floating-point noise from the EMA, preventing constant param_set traffic
 // when the signal is stable. 1/1023 gives ~10-bit resolution across [0,1].
 static const float kCvDeadBand = 1.0f / 1023.0f;
+static const float kAutoNormDecaySeconds = 20.0f;
 
 typedef struct
 {
@@ -96,8 +97,8 @@ typedef struct
   LV2_Log_Logger logger;
   LV2_URID_Map *map;
   RingBuffer *ringbuf;
-  smpl_t bufsize;
-  smpl_t hopsize;
+  uint_t bufsize;
+  uint_t hopsize;
   uint_t overruns;
   fvec_t *ab_in;
   fvec_t *onset;
@@ -234,7 +235,12 @@ instantiate(const LV2_Descriptor *descriptor,
 
   for (int i = 0; i < NUM_ONSET_METHODS; i++)
   {
-    self->onsets[i] = new_aubio_onset((char *)kOnsetMethods[i], self->bufsize, self->hopsize, self->samplerate);
+    /* new_aubio_onset() takes a non-const char* but does not modify the
+       string. Copy to a local buffer to avoid casting away const. */
+    char method_name[32];
+    strncpy(method_name, kOnsetMethods[i], sizeof(method_name) - 1);
+    method_name[sizeof(method_name) - 1] = '\0';
+    self->onsets[i] = new_aubio_onset(method_name, self->bufsize, self->hopsize, self->samplerate);
   }
 
   int size_detected = (int)ceilf((float)WINDOW_SECONDS_MAX * self->samplerate / self->hopsize);
@@ -242,6 +248,11 @@ instantiate(const LV2_Descriptor *descriptor,
   if (self->onsets_detected == nullptr)
   {
     lv2_log_error(&self->logger, "pluckface.lv2 error: couldn't allocate memory for onsets_detected\n");
+    del_fvec(self->ab_in);
+    del_fvec(self->onset);
+    for (int i = 0; i < NUM_ONSET_METHODS; i++)
+      del_aubio_onset(self->onsets[i]);
+    delete self->ringbuf;
     free(self);
     return NULL;
   }
@@ -443,7 +454,6 @@ run(LV2_Handle instance, uint32_t n_samples)
     self->param_alpha = 1.0f - expf(-(float)n_samples /
                                     (kCvParamRampSeconds * self->samplerate));
     // auto-norm drift coefficient: same expf pattern, hardcoded 20s decay.
-    const float kAutoNormDecaySeconds = 20.0f;
     self->auto_norm_coeff = 1.0f - expf(-(float)n_samples /
                                         (kAutoNormDecaySeconds * self->samplerate));
     self->last_n_samples = n_samples;
