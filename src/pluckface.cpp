@@ -59,7 +59,9 @@ typedef enum
   PLUCKFACE_INPUT_LEVEL_DB = 13,
   PLUCKFACE_CV_OUT_METER = 14,
   PLUCKFACE_ONSET_INDICATOR = 15,
-  PLUCKFACE_AUTO_NORMALIZE = 16
+  PLUCKFACE_AUTO_NORMALIZE = 16,
+  PLUCKFACE_AUTO_SCALE_OUT = 17,
+  PLUCKFACE_AUTO_OFFSET_OUT = 18
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -155,10 +157,12 @@ typedef struct
   // Auto-normalisation: peak/floor followers track the observed range of
   // metric_lp and derive scale/offset to map it to [0, 1].
   const float *auto_normalize;
-  float auto_norm_max;        // peak follower
-  float auto_norm_min;        // floor follower
-  float auto_norm_coeff;      // per-block drift coefficient (cached, 20s decay)
-  float last_auto_normalize;  // previous toggle value, for edge detection
+  float auto_norm_max;       // peak follower
+  float auto_norm_min;       // floor follower
+  float auto_norm_coeff;     // per-block drift coefficient (cached, 20s decay)
+  float last_auto_normalize; // previous toggle value, for edge detection
+  float *auto_scale_out;
+  float *auto_offset_out;
 } Pluckface;
 
 static void
@@ -259,7 +263,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->gui_cv_out_meter_value = 0.0f;
   self->last_published_cv_meter = -1.0f; // Force first update
   self->onset_indicator_count = 0.0f;
-  self->last_silence_threshold = -999.0f;       // Force first aubio setter call
+  self->last_silence_threshold = -999.0f; // Force first aubio setter call
   self->last_aubio_threshold = -999.0f;
   self->last_method_index = -1;
   // Seed with out-of-range value so the dead-band check always fires on
@@ -340,6 +344,12 @@ connect_port(LV2_Handle instance,
   case PLUCKFACE_AUTO_NORMALIZE:
     self->auto_normalize = (const float *)data;
     break;
+  case PLUCKFACE_AUTO_SCALE_OUT:
+    self->auto_scale_out = (float *)data;
+    break;
+  case PLUCKFACE_AUTO_OFFSET_OUT:
+    self->auto_offset_out = (float *)data;
+    break;
   }
 }
 
@@ -353,7 +363,7 @@ activate(LV2_Handle instance)
   }
   self->gui_meter_sample_counter = 0;
   self->onset_indicator_count = 0.0f;
-  self->last_n_samples = 0;        // force alpha recompute on next run()
+  self->last_n_samples = 0;          // force alpha recompute on next run()
   self->last_written_cv_out = -1.0f; // force clean CV write on next run()
   self->last_published_cv_meter = -1.0f;
   self->last_published_input_db = -999.0f;
@@ -603,23 +613,22 @@ run(LV2_Handle instance, uint32_t n_samples)
     const float range = self->auto_norm_max - self->auto_norm_min;
     if (range > kAutoNormMinRange)
     {
-      effective_scale  = 1.0f / range;
+      effective_scale = 1.0f / range;
       effective_offset = -self->auto_norm_min * effective_scale;
     }
     else
     {
       // Range too small yet (e.g. just after reset) — pass through unscaled
       // until the trackers have observed enough signal to work with.
-      effective_scale  = 1.0f;
+      effective_scale = 1.0f;
       effective_offset = 0.0f;
     }
   }
   else
   {
-    effective_scale  = self->ramped_scale;
+    effective_scale = self->ramped_scale;
     effective_offset = self->ramped_offset;
   }
-
   float cv_value = (self->metric_lp * effective_scale) + effective_offset;
   cv_value = std::max(cv_out_min, std::min(cv_out_max, cv_value));
   self->gui_cv_out_meter_value = cv_value; // unquantised, for the display meter
@@ -655,6 +664,10 @@ run(LV2_Handle instance, uint32_t n_samples)
   if (self->gui_meter_sample_counter >= self->gui_meter_interval_samples)
   {
     publish_gui_meters(self);
+    if (self->auto_scale_out)
+      *self->auto_scale_out = effective_scale;
+    if (self->auto_offset_out)
+      *self->auto_offset_out = effective_offset;
     self->gui_meter_sample_counter = 0;
   }
 }

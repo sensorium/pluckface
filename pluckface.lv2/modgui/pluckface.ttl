@@ -289,4 +289,20 @@
   lv2:minimum 0 ;
   lv2:maximum 1 ;
   lv2:portProperty lv2:integer, lv2:toggled ;
+], [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 17 ;
+  lv2:symbol "auto_scale_out" ;
+  lv2:name "Auto Scale (read)" ;
+  lv2:default 1.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 10.0 ;
+], [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 18 ;
+  lv2:symbol "auto_offset_out" ;
+  lv2:name "Auto Offset (read)" ;
+  lv2:default 0.0 ;
+  lv2:minimum -1.0 ;
+  lv2:maximum 1.0 ; 
 ] .

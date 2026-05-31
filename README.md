@@ -59,7 +59,7 @@ Development build notes
 
 Use templates as the source of truth for LV2 metadata:
 
-- Edit `lv2ttl/pluckface.ttl.in` (and `lv2ttl/manifest.modgui.in` when GUI port lists change).
+- Edit `lv2ttl/pluckface_ttl.in` (and `lv2ttl/manifest_modgui.in` when GUI port lists change).
 - Avoid editing generated files directly unless you intentionally want to sync checked-in artifacts.
 - Do not manually edit `build/pluckface.ttl` or `pluckface.lv2/pluckface.ttl`; regenerate them from templates via `make`.
 
@@ -82,7 +82,7 @@ generated assets.
 
 This regenerates, among other outputs:
 
-- `build/pluckface.ttl` (generated from `lv2ttl/pluckface.ttl.in`)
+- `build/pluckface.ttl` (generated from `lv2ttl/pluckface_ttl.in`)
 - `build/manifest.ttl` (includes MOD GUI metadata)
 - `build/pluckface.dylib`
 
@@ -119,7 +119,7 @@ Before tagging or shipping a build:
 
 3. Confirm template and generated metadata are in sync:
 
-- `lv2ttl/pluckface.ttl.in`
+- `lv2ttl/pluckface_ttl.in`
 - `build/pluckface.ttl`
 - `pluckface.lv2/pluckface.ttl` (if committed in this repo)
 

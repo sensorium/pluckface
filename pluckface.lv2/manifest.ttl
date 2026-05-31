@@ -22,5 +22,9 @@
             lv2:symbol "cv_out_meter" ;
         ] , [
             lv2:symbol "onset_indicator" ;
+        ] , [
+            lv2:symbol "auto_scale_out" ;
+        ] , [
+            lv2:symbol "auto_offset_out" ;
         ]
     ] .

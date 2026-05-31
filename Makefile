@@ -120,10 +120,10 @@ ifneq ($(MOD),)
 		lv2ttl/manifest_modgui.in >> $(BUILDDIR)manifest.ttl
 endif
 
-$(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME).ttl.in Makefile
+$(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME)_ttl.in Makefile
 	@mkdir -p $(BUILDDIR)
 	sed "s/@VERSION@/lv2:microVersion $(LV2MIC) ;lv2:minorVersion $(LV2MIN) ;/g" \
-		lv2ttl/$(LV2NAME).ttl.in > $(BUILDDIR)$(LV2NAME).ttl
+		lv2ttl/$(LV2NAME)_ttl.in > $(BUILDDIR)$(LV2NAME).ttl
 
 SRCS = $(BUILDDIR)RingBuffer.cpp
 OBJS = $(SRCS:.cpp=.o)
