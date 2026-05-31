@@ -80,7 +80,7 @@ static const float kOnsetSensitivityMax = 1.0f;
 static const float kCvTriggerLow = 0.0f;
 static const float kCvTriggerHigh = 10.0f;
 static const float kCvTriggerDurationSeconds = 0.12f;
-static const float kCvParamRampSeconds = 0.05f;
+static const float kCvParamRampSeconds = 0.25f;
 static const float kGuiMeterHz = 10.0f;
 // Minimum change in cv_out required to update the output buffer.
 // mod-host reads buffer[0] once per JACK block for CV addressing and fires
