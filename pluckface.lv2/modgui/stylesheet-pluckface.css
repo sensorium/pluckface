@@ -59,7 +59,7 @@ proportion is 598/1216 = 0.491776315789474
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.active {
     opacity:1;
-    /* transition:opacity 20ms ease-out; */
+    transition:opacity 150ms ease-out;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.pedal-off {
