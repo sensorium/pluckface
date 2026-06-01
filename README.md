@@ -3,6 +3,8 @@ Pluckface - Onset Rate Detector
 
 This is work in progress, don't use it yet.
 
+![Pluckface](modgui/screenshot-pluckface.png)
+
 Pluckface counts your plucks (audio onsets) and sends the count as a control voltage which varies with how fast you play.  The CV can be used to change parameters on other plugins.  
 
 Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  
