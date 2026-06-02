@@ -281,6 +281,26 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
     width:40px;
 }
 
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .pluckface-knob-glow-overlay,
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .pluckface-knob-glow-overlay {
+    position:absolute;
+    inset:0;
+    background-image:url(/resources/pedals/knob-indicator3d-glow.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 100%;
+    background-position:var(--glow-x, 0px) 0px;
+    pointer-events:none;
+    z-index:58;
+    opacity:0;
+    transition:opacity 500ms ease;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .pluckface-knob-glow-overlay.active,
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .pluckface-knob-glow-overlay.active {
+    opacity:1;
+    transition:opacity 20ms ease;
+}
+
 
 /* = ENUMERATED LIST
 ================================================ */
@@ -397,7 +417,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 /* AUTO-NORMALISE SWITCH */
 
 .mod-pedal-boxy{{{cns}}} .pluckface-auto-normalise-switch {
-    background-image: url(/resources/pedals/sliding-switch-horizontal-industrial-sprite-100x66.png{{{ns}}});
+    background-image: url(/resources/pedals/sliding-switch-horizontal-industrial-sprite2-100x66.png{{{ns}}});
     position:absolute;
     left:510px;
     top:43px;

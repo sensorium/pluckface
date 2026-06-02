@@ -9,6 +9,11 @@ function(event) {
     var INPUT_DB_EPSILON = 0.1;
     var BLINK_HOLD_MS = 60;   // how long eyes stay closed after an onset
     var ONSET_LED_HOLD_MS = 60;
+    var KNOB_SPRITE_FRAMES = 60;
+    var SCALE_CV_MIN = 0.0;
+    var SCALE_CV_MAX = 0.5;
+    var OFFSET_CV_MIN = -2.0;
+    var OFFSET_CV_MAX = 1.0;
     var icon = event.icon;
 
     // -------------------------------------------------------------------------
@@ -56,7 +61,9 @@ function(event) {
             face: icon.find('.pluckface-face')[0] || null,
             footswitch: icon.find('.mod-footswitch')[0] || null,
             scaleCvKnob: icon.find('.pluckface-scale-cv-knob')[0] || null,
-            offsetCvKnob: icon.find('.pluckface-offset-cv-knob')[0] || null
+            offsetCvKnob: icon.find('.pluckface-offset-cv-knob')[0] || null,
+            scaleCvGlow: icon.find('.pluckface-scale-cv-knob .pluckface-knob-glow-overlay')[0] || null,
+            offsetCvGlow: icon.find('.pluckface-offset-cv-knob .pluckface-knob-glow-overlay')[0] || null
         };
         return state.dom;
     }
@@ -161,53 +168,41 @@ function(event) {
     }
 
     // -------------------------------------------------------------------------
-    // Value overlay — briefly shows a numeric readout centred over a knob,
-    // used to display auto-norm scale/offset on toggle-off.
+    // Knob glow overlay — briefly shows the glow sprite at a value-matched
+    // frame on auto-norm toggle-off.
     // -------------------------------------------------------------------------
-    var OVERLAY_HOLD_MS = 3500;   // visible time before fade begins
+    var OVERLAY_HOLD_MS = 5500;   // visible time before fade begins
     var OVERLAY_FADE_MS = 500;    // CSS transition duration
 
-    function showValueOverlay(knobEl, value, state, timerKey) {
-        if (!knobEl) { return; }
+    function clamp(value, minValue, maxValue) {
+        return Math.min(Math.max(value, minValue), maxValue);
+    }
 
-        // Remove any existing overlay on this knob immediately
-        var existing = knobEl.querySelector('.pluckface-value-overlay');
-        if (existing) { knobEl.removeChild(existing); }
+    function normalizeToUnitRange(value, minValue, maxValue) {
+        if (maxValue <= minValue) { return 0.0; }
+        return (clamp(value, minValue, maxValue) - minValue) / (maxValue - minValue);
+    }
+
+    function frameForNormalizedValue(normalizedValue) {
+        var frameCount = KNOB_SPRITE_FRAMES;
+        var clamped = clamp(normalizedValue, 0.0, 1.0);
+        return Math.round(clamped * (frameCount - 1));
+    }
+
+    function showKnobGlowOverlay(knobEl, glowEl, normalizedValue, state, timerKey) {
+        if (!knobEl || !glowEl) { return; }
         if (state[timerKey]) { clearTimeout(state[timerKey]); state[timerKey] = null; }
 
-        var overlay = document.createElement('div');
-        overlay.className = 'pluckface-value-overlay';
-        overlay.textContent = value.toFixed(3);
-        overlay.style.cssText = [
-            'position:absolute',
-            'top:50%',
-            'left:50%',
-            'transform:translate(-50%,-50%)',
-            'background:rgba(0,0,0,0.72)',
-            'color:#fff',
-            'font-size:10px',
-            'font-family:monospace',
-            'padding:2px 5px',
-            'border-radius:3px',
-            'pointer-events:none',
-            'white-space:nowrap',
-            'opacity:1',
-            'transition:opacity ' + OVERLAY_FADE_MS + 'ms ease'
-        ].join(';');
-
-        // Absolute positioning requires a positioned ancestor
-        if (getComputedStyle(knobEl).position === 'static') {
-            knobEl.style.position = 'relative';
-        }
-        knobEl.appendChild(overlay);
+        var frameIndex = frameForNormalizedValue(normalizedValue);
+        var knobImageEl = knobEl.querySelector('.mod-knob-image');
+        var frameWidthPx = (knobImageEl && (knobImageEl.clientWidth || knobImageEl.offsetWidth)) || 40;
+        glowEl.style.setProperty('--glow-x', String(-frameIndex * frameWidthPx) + 'px');
+        glowEl.classList.add('active');
 
         // After hold period, trigger CSS fade then remove
         state[timerKey] = setTimeout(function () {
-            overlay.style.opacity = '0';
-            state[timerKey] = setTimeout(function () {
-                state[timerKey] = null;
-                if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
-            }, OVERLAY_FADE_MS);
+            state[timerKey] = null;
+            glowEl.classList.remove('active');
         }, OVERLAY_HOLD_MS);
     }
 
@@ -239,6 +234,8 @@ function(event) {
 
         // Reset eyes
         if (dom.faceEyes) { dom.faceEyes.classList.remove('active'); }
+        if (dom.scaleCvGlow) { dom.scaleCvGlow.classList.remove('active'); }
+        if (dom.offsetCvGlow) { dom.offsetCvGlow.classList.remove('active'); }
 
         paintFaceVisibility(dom, state);
 
@@ -311,8 +308,20 @@ function(event) {
     // and take the meters down with it.
     if (symbol === 'auto_normalise') {
         if (state.lastAutoNormalize > 0.5 && numericValue < 0.5) {
-            showValueOverlay(dom.scaleCvKnob, state.lastAutoScale, state, 'scaleOverlayTimer');
-            showValueOverlay(dom.offsetCvKnob, state.lastAutoOffset, state, 'offsetOverlayTimer');
+            showKnobGlowOverlay(
+                dom.scaleCvKnob,
+                dom.scaleCvGlow,
+                normalizeToUnitRange(state.lastAutoScale, SCALE_CV_MIN, SCALE_CV_MAX),
+                state,
+                'scaleOverlayTimer'
+            );
+            showKnobGlowOverlay(
+                dom.offsetCvKnob,
+                dom.offsetCvGlow,
+                normalizeToUnitRange(state.lastAutoOffset, OFFSET_CV_MIN, OFFSET_CV_MAX),
+                state,
+                'offsetOverlayTimer'
+            );
             // the following doesn't work
             // try {
             //     port_set('scale_cv_out', state.lastAutoScale);
