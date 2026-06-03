@@ -41,7 +41,7 @@ proportion is 598/1216 = 0.491776315789474
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes {
-    background-image:url(/resources/pedals/pluck-face-clown-green-screen-eyes-295x170.png{{{ns}}});
+    background-image:url(/resources/pedals/pluck-face-clown-green-screen-eyes.png{{{ns}}});
     background-position:center;
     background-repeat:no-repeat;
     background-size:contain;
@@ -285,7 +285,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 .mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .pluckface-knob-glow-overlay {
     position:absolute;
     inset:0;
-    background-image:url(/resources/pedals/knob-indicator3c-glow.png{{{ns}}});
+    background-image:url(/resources/pedals/knob-indicator3d-glow.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 100%;
     background-position:var(--glow-x, 0px) 0px;
