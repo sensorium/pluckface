@@ -19,9 +19,11 @@
   doap:maintainer <https://github.org/sensorium/> ;
   doap:name "Pluckface" ;
   rdfs:comment '''
-  Pluckface counts your plucks (audio onsets) and sends the count as a control voltage which varies with how fast you play.  The CV can be used to change parameters on other plugins.  
+  Pluckface senses how fast you are playing notes, and outputs a control voltage you can use to modulate other effects.
 
-  Play sparse, low CV, lots of notes, high CV, Say, long reverb when you play slow, and less when you're burning your fingers.  
+  It gives visual feedback to help you adjust the sensing and output to suit your playing, and has an auto range option.  It outputs a smoothed pluck rate, an inverted version of that, and a trigger for each pluck.
+
+  You can adjust a mixture of methods for counting the plucks, to get slow moving averages or fast envelope-like decays.
 
   CV out 1: positive moving count (0-1V)
   CV out 2: same signal, inverted so 0-1V -> 1-0V
