@@ -1,13 +1,15 @@
 Pluckface - Onset Rate Detector
 ============
 
-This is work in progress, don't use it yet.
+Pluckface senses how fast you are playing notes, and outputs a control voltage you can use to modulate other effects.
 
 ![Pluckface](modgui/screenshot-pluckface.png)
 
-Pluckface counts your plucks (audio onsets) and sends the count as a control voltage which varies with how fast you play.  The CV can be used to change parameters on other plugins.  
+It gives visual feedback to help you adjust the sensing and output to suit your playing, and has an auto range option.  It outputs a smoothed pluck rate, an inverted version of that, and a trigger for each pluck.
 
-Lots of notes, high CV, play sparse, low CV.  Say, lots of reverb when you play slow, and less when you're burning your fingers.  
+You can adjust a mixture of methods for counting the plucks, to get slow moving averages or fast envelope-like decays.
+
+And an annoying face blinks each time it senses you pluck.
 
 CV out 1: positive moving count (0-1V)
 CV out 2: same signal, inverted so 0-1V -> 1-0V
@@ -16,119 +18,40 @@ CV out 3 trigger on each onset
 The project was initially hacked from an Aubio Harmonizer LV2 plugin by Daniel Sheeler: https://github.com/dsheeler/harmonizer.lv2
 It builds using an included local copy of the Aubio library: https://github.com/aubio/aubio
 
-The CV outputs are throttled to 100Hz update rate as well as quantised to 256 levels, to reduce data clogging and GUI clag.
-
 Pluckface is initially intended for Mod audio devices.  It has also been built and tested on macOS Sonoma 14.8.5 with the Mod Desktop App.
-
-
-
 
 
 Install
 -------
-Compiling pluckface requires the LV2 SDK, bash, gnu-make, and a c-compiler.
 
-By default the build uses a system aubio install (via pkg-config). If aubio
-development headers are not installed, use the vendored fallback mode.
+If you are installing in a Mod device, use their http://builder.mod.audio/buildroot and load mk-for-mod-plugin-builder/pluckface.mk.
 
+Here's what works for me on MacOs Sonoma, using the mod interface and included aubio src, then copy result to lv2 bundle and install (you copy the .lv2 wherever your system expects them):
 ```bash
-  git clone git://github.com/sensorium/pluckface.lv2.git
-  cd pluckface.lv2
-  make
-  sudo make install PREFIX=/usr
+  git clone https://github.com/sensorium/pluckface.git
+  cd pluckface
+  make MOD=1 AUBIO_MODE=vendored sync-local-bundle
+  sudo cp -r pluckface.lv2 /Library/Audio/Plug-Ins/LV2 
 ```
 
-Build modes
+
+Usage Guide
 -----------
 
-Default (system aubio):
+Hopefully most controls are easy to understand!  A few might need explaining.
 
-```bash
-  make AUBIO_MODE=system
-```
+You can mix two ways of counting plucks: a count over some previous seconds, and a "leaky integrator" where plucks pile up and decay.  
 
-Vendored fallback (compile local src/aubio copy):
+Window Seconds  | The length of the moving time window used to count plucks
 
-```bash
-  make AUBIO_MODE=vendored
-```
+Mix             | Mix between Window and Integrator totals
 
-Note to packagers: The Makefile honors PREFIX and DESTDIR variables as well
- as CFLAGS, LDFLAGS and OPTIMIZATIONS (additions to CFLAGS).
+Decay Seconds   | How long a pluck takes to decay.  Short values are like an envelope follower
 
-Development build notes
------------------------
+Smooth          | Smooth the output CV
 
-Use templates as the source of truth for LV2 metadata:
+Auto            | Enables auto-normalisation of the CV output to use full available range.  When Auto is toggled off, red markers show on the Gain and Offset controls to show Auto's calculated settings in case you want to match them.
 
-- Edit `lv2ttl/pluckface_ttl.in` (and `lv2ttl/manifest_modgui.in` when GUI port lists change).
-- Avoid editing generated files directly unless you intentionally want to sync checked-in artifacts.
-- Do not manually edit `build/pluckface.ttl` or `pluckface.lv2/pluckface.ttl`; regenerate them from templates via `make`.
+Gain            | CV output gain
 
-Regenerate metadata and plugin artifacts:
-
-```bash
-  make MOD=1 AUBIO_MODE=vendored all
-```
-
-For MOD Desktop development, refresh the local `pluckface.lv2` bundle from
-generated `build/` outputs in one step:
-
-```bash
-  make MOD=1 AUBIO_MODE=vendored sync-local-bundle
-```
-
-This updates `pluckface.lv2/manifest.ttl`, `pluckface.lv2/pluckface.ttl`,
-the plugin binary, and replaces `pluckface.lv2/modgui` with the latest
-generated assets.
-
-This regenerates, among other outputs:
-
-- `build/pluckface.ttl` (generated from `lv2ttl/pluckface_ttl.in`)
-- `build/manifest.ttl` (includes MOD GUI metadata)
-- `build/pluckface.dylib`
-
-If you only changed plugin TTL metadata, regenerate just that file:
-
-```bash
-  make MOD=1 AUBIO_MODE=vendored build/pluckface.ttl
-```
-
-MOD UI refresh behavior
------------------------
-
-MOD can cache plugin and GUI metadata. After metadata changes (port names,
-ranges, added/removed ports), restart mod-ui or reboot the device to ensure
-the new definitions are loaded.
-
-Release checklist
------------------
-
-Before tagging or shipping a build:
-
-1. Build with vendored aubio to ensure deterministic local CI-style output:
-
-```bash
-  make MOD=1 AUBIO_MODE=vendored all
-```
-
-2. Refresh the local bundle used by MOD Desktop so metadata and GUI assets match
-   generated outputs:
-
-```bash
-  make MOD=1 AUBIO_MODE=vendored sync-local-bundle
-```
-
-3. Confirm template and generated metadata are in sync:
-
-- `lv2ttl/pluckface_ttl.in`
-- `build/pluckface.ttl`
-- `pluckface.lv2/pluckface.ttl` (if committed in this repo)
-
-4. Install into test LV2 path and verify ports appear with expected names/ranges.
-5. Restart mod-ui (or reboot MOD device) and re-check the plugin UI after metadata changes.
-6. Run a quick smoke test:
-
-- Onset CV responds to playing rate
-- Trigger CV pulses on detected onsets
-- Invert CV flips output polarity within `0..1` (e.g. `0.2 -> 0.8`)
+Offset          | CV output offset

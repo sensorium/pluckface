@@ -24,8 +24,6 @@ SRCS =
 
 .SUFFIXES:
 
-.SUFFIXES: .cpp
-
 UNAME=$(shell uname)
 ifeq ($(UNAME),Darwin)
   LV2LDFLAGS=-dynamiclib
@@ -106,7 +104,7 @@ endif
 # build target definitions
 default: all
 
-all: initialize $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(targets)
+all: $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(targets)
 
 lv2syms:
 	echo "_lv2_descriptor" > lv2syms
@@ -128,16 +126,9 @@ $(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME)_ttl.in Makefile
 SRCS = $(BUILDDIR)RingBuffer.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-.SUFFIXES:
-
-.SUFFIXES: .c
-
-initialize: init
 
 init:
 	@mkdir -p $(BUILDDIR)
-#	cp -rp src/*.cpp src/*.h $(BUILDDIR)
-#	cp -rp src/aubio/* $(BUILDDIR)
 
 $(BUILDDIR)%.o : src/aubio/%.c
 	@mkdir -p $(BUILDDIR)
@@ -194,10 +185,7 @@ uninstall:
 	-rmdir $(DESTDIR)$(LV2DIR)/$(BUNDLE)
 
 clean:
-	rm -f $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl \
-	 $(BUILDDIR)$(LV2NAME)$(LIB_EXT) lv2syms
-	rm -rf $(BUILDDIR)modgui
-	
-	-test -d $(BUILDDIR) && rm -rf $(BUILDDIR) || true
+	rm -f lv2syms
+	rm -rf $(BUILDDIR)
 
-.PHONY: clean all install uninstall
+.PHONY: clean all install uninstall default init
