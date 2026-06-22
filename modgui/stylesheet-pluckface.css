@@ -239,6 +239,7 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 
 /* Hidden by default; shown via mod-boxy85.mod-pink overrides below */
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-knob,
+.mod-pedal-boxy{{{cns}}} .pluckface-minioi-knob,
 .mod-pedal-boxy{{{cns}}} .pluckface-window-knob,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob,
@@ -252,12 +253,14 @@ When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-knob { left:65px; top:341px; width:35px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-minioi-knob { left:45px; top:140px; width:35px; }
 .mod-pedal-boxy{{{cns}}} .pluckface-window-knob { left:248px; top:341px; width:35px; }
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob { left:337px; top:341px; width:35px; }
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob { left:425px; top:341px; width:35px; }
 .mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob { left:516px; top:341px; width:35px; }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-minioi-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-window-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob .mod-knob-image,

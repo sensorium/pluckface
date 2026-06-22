@@ -61,7 +61,8 @@ typedef enum
   PLUCKFACE_ONSET_INDICATOR = 15,
   PLUCKFACE_AUTO_NORMALIZE = 16,
   PLUCKFACE_AUTO_SCALE_OUT = 17,
-  PLUCKFACE_AUTO_OFFSET_OUT = 18
+  PLUCKFACE_AUTO_OFFSET_OUT = 18,
+  PLUCKFACE_MINIOI_MS = 19
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -112,6 +113,7 @@ typedef struct
   const float *leaky_mix;
   const float *leaky_decay_seconds;
   const float *cv_smoothing;
+  const float *minioi_ms;
   const float *input;
   float *cv_out;
   float *cv_inverted_out;
@@ -141,6 +143,7 @@ typedef struct
   // avoiding unnecessary work in the DSP thread every run() call.
   float last_silence_threshold;
   float last_aubio_threshold;
+  float last_minioi_ms;
   int last_method_index;
   // Last values written to the CV output buffers. The dead-band check
   // compares against these to suppress noise-floor updates, which would
@@ -276,6 +279,7 @@ instantiate(const LV2_Descriptor *descriptor,
   self->onset_indicator_count = 0.0f;
   self->last_silence_threshold = -999.0f; // Force first aubio setter call
   self->last_aubio_threshold = -999.0f;
+  self->last_minioi_ms = -1.0f;
   self->last_method_index = -1;
   // Seed with out-of-range value so the dead-band check always fires on
   // the first run() call, ensuring a clean write to the CV buffers.
@@ -330,6 +334,9 @@ connect_port(LV2_Handle instance,
     break;
   case PLUCKFACE_CV_SMOOTHING:
     self->cv_smoothing = (float *)data;
+    break;
+  case PLUCKFACE_MINIOI_MS:
+    self->minioi_ms = (float *)data;
     break;
   case PLUCKFACE_CV_INVERT_OUT:
     self->cv_inverted_out = (float *)data;
@@ -399,7 +406,7 @@ run(LV2_Handle instance, uint32_t n_samples)
       !self->onset_method || !self->onset_sensitivity || !self->silence_threshold ||
       !self->window_seconds || !self->scale_cv_out || !self->offset_cv_out ||
       !self->leaky_mix || !self->leaky_decay_seconds || !self->cv_smoothing ||
-      !self->auto_normalize)
+      !self->auto_normalize || !self->minioi_ms)
   {
     if (self && self->cv_out)
     {
@@ -500,6 +507,7 @@ run(LV2_Handle instance, uint32_t n_samples)
   const int method_index = std::max(0, std::min(NUM_ONSET_METHODS - 1, (int)*self->onset_method));
   const float onset_sensitivity = std::max(kOnsetSensitivityMin, std::min(kOnsetSensitivityMax, *self->onset_sensitivity));
   const float aubio_onset_threshold = powf(10.0f, -onset_sensitivity);
+  const float minioi_ms = std::max(1.0f, std::min(500.0f, *self->minioi_ms));
   // Only call aubio setters when the values have actually changed — these
   // are called unconditionally each run() otherwise, wasting DSP cycles.
   const float silence_threshold = (float)*self->silence_threshold;
@@ -512,6 +520,14 @@ run(LV2_Handle instance, uint32_t n_samples)
   {
     aubio_onset_set_threshold(self->onsets[method_index], aubio_onset_threshold);
     self->last_aubio_threshold = aubio_onset_threshold;
+  }
+  if (minioi_ms != self->last_minioi_ms)
+  {
+    for (int i = 0; i < NUM_ONSET_METHODS; ++i)
+    {
+      aubio_onset_set_minioi_ms(self->onsets[i], minioi_ms);
+    }
+    self->last_minioi_ms = minioi_ms;
   }
   self->last_method_index = method_index;
 
