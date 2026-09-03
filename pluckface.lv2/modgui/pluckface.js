@@ -28,8 +28,8 @@ function(event) {
                 meterLastPaintMs: 0,
                 meterTimer: null,     // setTimeout handle for meter repaints
                 blinkTimer: null,     // setTimeout handle for clearing blink
-                paintedInputNorm: null,
-                paintedCv: null,
+                paintedInputLevel: null,
+                paintedCvLevel: null,
                 paintedBlinkActive: null,
                 paintedFootswitchOn: null,
                 footswitchObserver: null,
@@ -54,8 +54,8 @@ function(event) {
         var inputMeter = icon.find('.pluckface-input-meter')[0];
         var cvMeter = icon.find('.pluckface-cv-meter')[0];
         state.dom = {
-            inputMask: inputMeter ? inputMeter.querySelector('.pluckface-input-meter-mask') : null,
-            cvMask: cvMeter ? cvMeter.querySelector('.pluckface-cv-meter-mask') : null,
+            inputLeds: inputMeter ? inputMeter.querySelector('.pluckface-input-meter-leds') : null,
+            cvLeds: cvMeter ? cvMeter.querySelector('.pluckface-cv-meter-leds') : null,
             onsetLed: icon.find('.pluckface-onset-led')[0] || null,
             faceEyes: icon.find('.pluckface-face-eyes')[0] || null,
             face: icon.find('.pluckface-face')[0] || null,
@@ -69,28 +69,28 @@ function(event) {
     }
 
     function hasRenderableUi(dom) {
-        return !!(dom.inputMask || dom.cvMask || dom.onsetLed || dom.faceEyes || dom.face);
+        return !!(dom.inputLeds || dom.cvLeds || dom.onsetLed || dom.faceEyes || dom.face);
     }
 
     // -------------------------------------------------------------------------
     // Meter paint — called on a throttled timer, handles input + cv meters only
     // -------------------------------------------------------------------------
     function paintMeters(dom, state) {
-        if (dom.inputMask) {
+        if (dom.inputLeds) {
             var db = Math.min(Math.max(state.inputPendingDb, -90.0), 0.0);
             var inputNorm = (db + 90.0) / 90.0;
-            if (state.paintedInputNorm === null ||
-                Math.abs(state.paintedInputNorm - inputNorm) >= PAINT_EPSILON) {
-                state.paintedInputNorm = inputNorm;
-                dom.inputMask.style.setProperty('--meter-fill', String(inputNorm));
+            var inputLevel = Math.round(inputNorm * 6);
+            if (state.paintedInputLevel !== inputLevel) {
+                state.paintedInputLevel = inputLevel;
+                dom.inputLeds.style.setProperty('--input-meter-level', String(inputLevel));
             }
         }
-        if (dom.cvMask) {
+        if (dom.cvLeds) {
             var cv = Math.min(Math.max(state.cvPendingValue, 0.0), 1.0);
-            if (state.paintedCv === null ||
-                Math.abs(state.paintedCv - cv) >= PAINT_EPSILON) {
-                state.paintedCv = cv;
-                dom.cvMask.style.setProperty('--meter-fill', String(cv));
+            var cvLevel = Math.round(cv * 10);
+            if (state.paintedCvLevel !== cvLevel) {
+                state.paintedCvLevel = cvLevel;
+                dom.cvLeds.style.setProperty('--cv-meter-level', String(cvLevel));
             }
         }
     }
@@ -226,8 +226,8 @@ function(event) {
         if (!hasRenderableUi(dom)) { return; }
 
         // Reset meters
-        if (dom.inputMask) { dom.inputMask.style.setProperty('--meter-fill', '0'); }
-        if (dom.cvMask) { dom.cvMask.style.setProperty('--meter-fill', '0'); }
+        if (dom.inputLeds) { dom.inputLeds.style.setProperty('--input-meter-level', '0'); }
+        if (dom.cvLeds) { dom.cvLeds.style.setProperty('--cv-meter-level', '0'); }
 
         // Reset LED — write 0 once at startup so the CSS fallback doesn't show
         // if (dom.onsetLed) { dom.onsetLed.style.setProperty('--onset-intensity', '0'); }

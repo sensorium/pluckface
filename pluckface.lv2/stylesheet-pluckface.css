@@ -15,10 +15,8 @@ proportion is 598/1216 = 0.491776315789474
     height:437px;
     position:absolute;
     width:600px;
-    border-radius: 65px;
+    border-radius: 130px;
 }
-
-
 
 /* = FACE GRAPHIC
 ================================================ */
@@ -27,13 +25,13 @@ proportion is 598/1216 = 0.491776315789474
     background-position:center;
     background-repeat:no-repeat;
     background-size:contain;
-    left:175px;
+    left:158px;
     pointer-events:none;
     position:absolute;
-    top:57px;
+    top:43px;
     z-index:10;
-    width:267px;
-    height:238px;
+    width:283.26px;
+    height:245.4px;
     transition: opacity 250ms ease-in-out;
     will-change: opacity;
 }
@@ -47,16 +45,16 @@ proportion is 598/1216 = 0.491776315789474
     background-position:center;
     background-repeat:no-repeat;
     background-size:contain;
-    left:60px;
-    top:70px;
+    left:67.37px;
+    top:72.78px;
     position:absolute;
     will-change: opacity;
     opacity:0;
     /* transition:opacity 20ms ease-out; */
     z-index:11;
     pointer-events: none;
-    width: 143px;
-    height: 83px;
+    width: 145.07px;
+    height: 83.6px;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes.active {
@@ -94,39 +92,42 @@ proportion is 598/1216 = 0.491776315789474
     background-size:contain;
     background-repeat:no-repeat;
     height:15px;
-    left:59px;
+    left:31px;
     position:absolute;
     width: 15px;
-    top:150px;
-    transform:translate(-50%, -50%);
+    top:155px;
 }
 
 
 /* = INPUT LEVEL METER
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .pluckface-input-meter {
+    background:rgba(0,0,0,0.2);
+    box-sizing:border-box;
+    border-radius:3px;
     overflow:hidden;
     position:absolute;
-    left:110px;
-    top:150px;
-    width:53px;
-    height:140px;
-    z-index:60;
+    left:88px;
+    top:171px;
+    width:13px;
+    height:105.7px;
+    z-index:65;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-leds {
-    background-image:url(/resources/pedals/input_leds_53x140.png{{{ns}}});
-    background-position:left bottom;
-    background-repeat:no-repeat;
-    bottom:0;
-    height:calc(var(--input-meter-level, 0) * 100% / 6);
+/* The mask covers the meter via scaleY driven by --meter-fill.
+When --meter-fill is 1.0 (0dB), scaleY is 0 (mask is invisible).
+When --meter-fill is 0.0 (-90dB), scaleY is 1 (meter is fully covered). */
+.mod-pedal-boxy{{{cns}}} .pluckface-input-meter-mask {
+    background:rgba(0,0,0,0.85);
+    height:100%;
     left:0;
     position:absolute;
+    top:0;
     width:100%;
     pointer-events:none;
-    -webkit-mask-image:linear-gradient(to bottom, transparent, #000 3px);
-    mask-image:linear-gradient(to bottom, transparent, #000 3px);
-    will-change:height;
+    transform:scaleY(calc(1 - var(--meter-fill, 0)));
+    transform-origin:top center;
+    will-change:transform;
 }
 
 
@@ -134,28 +135,27 @@ proportion is 598/1216 = 0.491776315789474
 /* = CV METER
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .pluckface-cv-meter {
+    box-sizing:border-box;
     overflow:hidden;
     position:absolute;
-    left:448px;
-    top:60px;
-    width:63px;
-    height:229px;
+    left:465px;
+    top:55px;
+    width:22px;
+    height:221px;
     z-index:65;
 }
 
-.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-leds {
-    background-image:url(/resources/pedals/output_leds_63x229.png{{{ns}}});
-    background-position:left bottom;
-    background-repeat:no-repeat;
-    bottom:0;
-    height:calc(var(--cv-meter-level, 0) * 100% / 10);
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-meter-mask {
+    background:rgba(0,0,0,0.85);
+    height:100%;
     left:0;
     position:absolute;
+    top:0;
     width:100%;
     pointer-events:none;
-    -webkit-mask-image:linear-gradient(to bottom, transparent, #000 3px);
-    mask-image:linear-gradient(to bottom, transparent, #000 3px);
-    will-change:height;
+    transform:scaleY(calc(1 - var(--meter-fill, 0)));
+    transform-origin:top center;
+    will-change:transform;
 }
 
 
@@ -175,7 +175,6 @@ proportion is 598/1216 = 0.491776315789474
     transition: opacity 300ms ease-out;  /* fade OUT */
     z-index:45;
     pointer-events: none;
-    transform:translate(-50%, -50%);
 }
 
 
@@ -188,28 +187,57 @@ proportion is 598/1216 = 0.491776315789474
 /* = FOOTSWITCH
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .mod-footswitch {
-    background-image:url(/resources/pedals/power-switch-perspective.png{{{ns}}});
-    background-position:left top;
+    background-image:url(/resources/pedals/power-switch-88x119.png{{{ns}}});
+    background-position:top center;
     background-repeat:no-repeat;
-    background-size:auto 53px;
-    left:36px;
-    top:166px;
+    background-size:auto 118px;
+    left:59px;
+    top:190px;
     cursor:pointer;
-    height:53px;
-    width:39px;
+    height:59px;
+    width:43px;
     margin:0;
-    position:absolute;
-    //transform:translate(-50%, -50%);
+    position:absolute !important;
 }
 
 .mod-pedal-boxy{{{cns}}} .mod-footswitch.on {
-    background-position-x:right !important;
+    background-position-y:bottom !important;
 }
 
 
 /* = CONTROL GROUP / KNOBS
 ================================================ */
+.mod-pedal-boxy{{{cns}}} .mod-control-group {
+    width:330px;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    position:relative;
+    text-align:center;
+    z-index:30;
+}
 
+.mod-pedal-boxy{{{cns}}} .mod-control-group .mod-knob {
+    overflow:hidden;
+    position:relative;
+}
+
+.mod-pedal-boxy{{{cns}}} .mod-control-group .mod-knob > span.mod-knob-title {
+    bottom:0px;
+    display:block;
+    font-size:11px;
+    font-weight:bold;
+    height:12px;
+    left:0;
+    line-height:1;
+    margin:0;
+    overflow:hidden;
+    padding:0;
+    position:absolute;
+    right:0;
+    text-transform:uppercase;
+}
+
+/* Hidden by default; shown via mod-boxy85.mod-pink overrides below */
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-knob,
 .mod-pedal-boxy{{{cns}}} .pluckface-minioi-knob,
 .mod-pedal-boxy{{{cns}}} .pluckface-window-knob,
@@ -239,22 +267,33 @@ proportion is 598/1216 = 0.491776315789474
 .mod-pedal-boxy{{{cns}}} .pluckface-window-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-mix-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-leaky-decay-knob .mod-knob-image,
-.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-cv-smoothing-knob .mod-knob-image, 
 .mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .mod-knob-image,
 .mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .mod-knob-image {
-    background-image:url(/resources/pedals/metalknob-5b-alpha.png{{{ns}}});
+    background-image:url(/resources/pedals/metalknob-3.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 40px;
     height:40px;
     width:40px;
-    opacity: 0.75; 
 }
+
+/* .mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob { left:537px; top:235px; width:40px; }
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob { left:537px; top:133px; width:40px; }
+
+.mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .mod-knob-image,
+.mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .mod-knob-image {
+    background-image:url(/resources/pedals/knob-indicator3.png{{{ns}}});
+    background-repeat:no-repeat;
+    background-size:auto 40px;
+    height:40px;
+    width:40px;
+} */
 
 .mod-pedal-boxy{{{cns}}} .pluckface-offset-cv-knob .pluckface-knob-glow-overlay,
 .mod-pedal-boxy{{{cns}}} .pluckface-scale-cv-knob .pluckface-knob-glow-overlay {
     position:absolute;
     inset:0;
-    background-image:url(/resources/pedals/metalknob-5b-alpha-glow.png{{{ns}}});
+    background-image:url(/resources/pedals/knob-indicator3d-glow.png{{{ns}}});
     background-repeat:no-repeat;
     background-size:auto 100%;
     background-position:var(--glow-x, 0px) 0px;
@@ -339,45 +378,43 @@ proportion is 598/1216 = 0.491776315789474
     letter-spacing:0.6px;
     line-height:1.8;
     text-transform:uppercase;
-    text-align:center;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group .mod-enumerated .mod-enumerated-selected {
     background:rgba(10, 18, 16, 0.88);
     border-radius:6px;
-    color:#ffa759;
+    color:#449291;
     outline:none;
     padding:3px 9px;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-onset-method-group .mod-enumerated .mod-enumerated-list {
-    color:#ffa759;
+    color:#449291;
     z-index:121;
 }
-
 
 
 /* = SLIDER (used by pluckface-silence-slider)
 ================================================ */
 .mod-pedal-boxy{{{cns}}} .pluckface-silence-slider {
     display:block;
-    height:155px;
-    left:80px;
+    height:130px;
+    left:104px;
     margin:0;
     overflow:visible;
     position:absolute;
-    top:151px;
-    width:45px;
-    z-index:65;
+    top:160px;
+    width:32px;
+    z-index:56;
 }
 
 .mod-pedal-boxy{{{cns}}} .pluckface-silence-slider .mod-slider-image {
-    background-image:url(/resources/pedals/handle_sprite.png{{{ns}}});
+    background-image:url(/resources/pedals/slider_sprite_2048x140.png{{{ns}}});
     background-repeat:no-repeat;
-    background-size:2700px 155px;
-    height:155px;
+    background-size:2048px 140px;
+    height:140px;
     margin:0 auto;
-    width:45px;
+    width:32px;
 }
 
 .mod-pedal-boxy{{{cns}}} .mod-slider .mod-slider-image:hover {
@@ -390,8 +427,8 @@ proportion is 598/1216 = 0.491776315789474
 .mod-pedal-boxy{{{cns}}} .pluckface-auto-normalise-switch {
     background-image: url(/resources/pedals/sliding-switch-horizontal-industrial-sprite2-100x66.png{{{ns}}});
     position:absolute;
-    left:542px;
-    top:93px;
+    left:538px;
+    top:89px;
     width:49px;
     height:32px;
     background-repeat:no-repeat;
@@ -399,5 +436,4 @@ proportion is 598/1216 = 0.491776315789474
     background-position:left top;
     cursor:pointer;
     z-index:120;
-    transform:translate(-50%, -50%);
 }
