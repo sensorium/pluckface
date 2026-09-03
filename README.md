@@ -45,8 +45,9 @@ You can mix two ways of counting plucks: a count over some previous seconds, and
 | Control         | Function  |
 | --------------- | --------- |
 | Onset Method    | Choose Aubio library onset detection method |
-| Silence Threshold | Any audio below this level will not trigger onsets |
+| Thresh          | Any audio below this level will not trigger onsets |
 | Sensitivity     | Onset detection algorithm sensitivity |
+| Interval Ms     | Milliseconds to wait after an offset before another can trigger |
 | Window Seconds  | The length of the moving time window used to count plucks |
 | Mix             | Mix between Window and Integrator totals |
 | Decay Seconds   | How long a pluck takes to decay.  Short values are like an envelope follower |
