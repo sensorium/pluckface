@@ -42,6 +42,38 @@ proportion is 598/1216 = 0.491776315789474
     opacity: 0;
 }
 
+.mod-pedal-boxy{{{cns}}} .pluckface-face.graph-mode {
+    opacity: 0;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckface-view-toggle {
+    position:absolute;
+    left:175px;
+    top:57px;
+    width:267px;
+    height:238px;
+    z-index:40;
+    cursor:pointer !important;
+    pointer-events:auto;
+    transition: opacity 250ms ease-in-out;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckface-view-toggle.pedal-off {
+    opacity: 0;
+    pointer-events:none;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckface-graph {
+    display:none;
+    width:267px;
+    height:238px;
+    border-radius:8px;
+}
+
+.mod-pedal-boxy{{{cns}}} .pluckface-view-toggle.graph-mode .pluckface-graph {
+    display:block;
+}
+
 .mod-pedal-boxy{{{cns}}} .pluckface-face-eyes {
     background-image:url(/resources/pedals/pluckbase-chernoble5-clown-orange-eyes.png{{{ns}}});
     background-position:center;

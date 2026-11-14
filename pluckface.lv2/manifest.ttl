@@ -3,7 +3,7 @@
 
 <urn:sensorium:pluckface>
 	a lv2:Plugin ;
-	lv2:binary <pluckface.dylib>  ;
+	lv2:binary <pluckface.so>  ;
 	rdfs:seeAlso 	<pluckface.ttl> .
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
@@ -26,5 +26,13 @@
             lv2:symbol "auto_scale_out" ;
         ] , [
             lv2:symbol "auto_offset_out" ;
+        ] , [
+            lv2:symbol "window_level" ;
+        ] , [
+            lv2:symbol "integrator_level" ;
+        ] , [
+            lv2:symbol "metric_level" ;
+        ] , [
+            lv2:symbol "cv_level" ;
         ]
     ] .

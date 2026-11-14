@@ -31,9 +31,9 @@
 #include "onset/onset.h"
 #endif
 
-#include <lv2/lv2plug.in/ns/ext/urid/urid.h>
-#include "lv2/lv2plug.in/ns/ext/log/logger.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include <lv2/urid/urid.h>
+#include "lv2/log/logger.h"
+#include "lv2/core/lv2.h"
 
 #define PLUCKFACE_URI "urn:sensorium:pluckface"
 #define RB_SIZE 16384
@@ -62,7 +62,11 @@ typedef enum
   PLUCKFACE_AUTO_NORMALIZE = 16,
   PLUCKFACE_AUTO_SCALE_OUT = 17,
   PLUCKFACE_AUTO_OFFSET_OUT = 18,
-  PLUCKFACE_MINIOI_MS = 19
+  PLUCKFACE_MINIOI_MS = 19,
+  PLUCKFACE_WINDOW_LEVEL = 20,
+  PLUCKFACE_INTEGRATOR_LEVEL = 21,
+  PLUCKFACE_METRIC_LEVEL = 22,
+  PLUCKFACE_CV_LEVEL = 23
 } PortIndex;
 
 static const char *kOnsetMethods[NUM_ONSET_METHODS] = {
@@ -121,6 +125,14 @@ typedef struct
   float *input_level_db;
   float *cv_out_meter;
   float *onset_indicator;
+  float *window_level;
+  float *integrator_level;
+  float *metric_level;
+  float *cv_level;
+  float last_published_cv_level;
+  float last_published_window_level;
+  float last_published_integrator_level;
+  float last_published_metric_level;
   int8_t *onsets_detected;
   int16_t window_index;
   int16_t onsets_total;
@@ -169,9 +181,27 @@ typedef struct
   float *auto_offset_out;
 } Pluckface;
 
+// Publish a graph level rounded to 0.01 so the host only sees real changes.
+static void
+publish_level(float *port, float value, float *last)
+{
+  if (!port)
+    return;
+  const float rounded = floorf(value * 100.0f + 0.5f) / 100.0f;
+  if (rounded != *last)
+  {
+    *port = rounded;
+    *last = rounded;
+  }
+}
+
 static void
 publish_gui_meters(Pluckface *self)
 {
+  publish_level(self->window_level, (float)self->onsets_total, &self->last_published_window_level);
+  publish_level(self->integrator_level, self->leaky_onset_level, &self->last_published_integrator_level);
+  publish_level(self->cv_level, std::max(0.0f, self->last_written_cv_out), &self->last_published_cv_level);
+  publish_level(self->metric_level, self->metric_lp, &self->last_published_metric_level);
   if (self->input_level_db)
   {
     const float norm = (self->input_level_db_lp + 90.0f) / 90.0f;
@@ -276,6 +306,10 @@ instantiate(const LV2_Descriptor *descriptor,
   self->gui_meter_sample_counter = 0;
   self->gui_cv_out_meter_value = 0.0f;
   self->last_published_cv_meter = -1.0f; // Force first update
+  self->last_published_window_level = -1.0f;
+  self->last_published_integrator_level = -1.0f;
+  self->last_published_metric_level = -1.0f;
+  self->last_published_cv_level = -1.0f;
   self->onset_indicator_count = 0.0f;
   self->last_silence_threshold = -999.0f; // Force first aubio setter call
   self->last_aubio_threshold = -999.0f;
@@ -359,6 +393,18 @@ connect_port(LV2_Handle instance,
   case PLUCKFACE_ONSET_INDICATOR:
     self->onset_indicator = (float *)data;
     break;
+  case PLUCKFACE_WINDOW_LEVEL:
+    self->window_level = (float *)data;
+    break;
+  case PLUCKFACE_INTEGRATOR_LEVEL:
+    self->integrator_level = (float *)data;
+    break;
+  case PLUCKFACE_METRIC_LEVEL:
+    self->metric_level = (float *)data;
+    break;
+  case PLUCKFACE_CV_LEVEL:
+    self->cv_level = (float *)data;
+    break;
   case PLUCKFACE_AUTO_NORMALIZE:
     self->auto_normalize = (const float *)data;
     break;
@@ -384,6 +430,10 @@ activate(LV2_Handle instance)
   self->last_n_samples = 0;          // force alpha recompute on next run()
   self->last_written_cv_out = -1.0f; // force clean CV write on next run()
   self->last_published_cv_meter = -1.0f;
+  self->last_published_window_level = -1.0f;
+  self->last_published_integrator_level = -1.0f;
+  self->last_published_metric_level = -1.0f;
+  self->last_published_cv_level = -1.0f;
   self->last_published_input_db = -999.0f;
   publish_gui_meters(self);
 }

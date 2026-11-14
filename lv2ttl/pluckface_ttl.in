@@ -321,4 +321,36 @@
   lv2:maximum 500.0 ;
   pprops:rangeSteps 499 ;
   units:unit units:ms ;
+] , [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 20 ;
+  lv2:symbol "window_level" ;
+  lv2:name "Window Level (read)" ;
+  lv2:default 0.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 1000.0 ;
+] , [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 21 ;
+  lv2:symbol "integrator_level" ;
+  lv2:name "Integrator Level (read)" ;
+  lv2:default 0.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 1000.0 ;
+] , [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 22 ;
+  lv2:symbol "metric_level" ;
+  lv2:name "Mixed Level (read)" ;
+  lv2:default 0.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 1000.0 ;
+] , [
+  a lv2:OutputPort, lv2:ControlPort ;
+  lv2:index 23 ;
+  lv2:symbol "cv_level" ;
+  lv2:name "CV Level (read)" ;
+  lv2:default 0.0 ;
+  lv2:minimum 0.0 ;
+  lv2:maximum 1.0 ;
 ] .
