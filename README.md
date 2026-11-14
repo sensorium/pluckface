@@ -26,14 +26,21 @@ Install
 
 If you are installing in a Mod device, use their http://builder.mod.audio/buildroot and load mk-for-mod-plugin-builder/pluckface.mk.
 
-This works for me on MacOs Sonoma, tested with Mod Desktop App:
+This works for me on MacOs Sonoma and UbuntuStudio, tested with Mod Desktop App:
 ```bash
   git clone https://github.com/sensorium/pluckface.git
   cd pluckface
   make MOD=1 AUBIO_MODE=vendored sync-local-bundle
-  sudo cp -r pluckface.lv2 /Library/Audio/Plug-Ins/LV2 
-```
+  ```
 
+Then on mac,
+'''
+  sudo cp -r pluckface.lv2 /Library/Audio/Plug-Ins/LV2 
+'''
+Or on linux:
+'''
+cp -r pluckface.lv2 ~/.lv2
+'''
 
 Usage Guide
 -----------
