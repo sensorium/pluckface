@@ -31,9 +31,9 @@
 #include "onset/onset.h"
 #endif
 
-#include <lv2/lv2plug.in/ns/ext/urid/urid.h>
-#include "lv2/lv2plug.in/ns/ext/log/logger.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include <lv2/urid/urid.h>
+#include <lv2/log/logger.h>
+#include <lv2/core/lv2.h>
 
 #define PLUCKFACE_URI "urn:sensorium:pluckface"
 #define RB_SIZE 16384
