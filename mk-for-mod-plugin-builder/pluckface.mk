@@ -3,8 +3,8 @@
 # pluckface
 #
 ######################################
-# get version hash with: git rev-parse HEAD
-PLUCKFACE_VERSION = 19e4ccc2f556ac5b4bfd41db40e80854bc162205
+# get version tag with: git describe --tags HEAD
+PLUCKFACE_VERSION = v0.0.21
 PLUCKFACE_SITE = https://github.com/sensorium/pluckface.git
 PLUCKFACE_SITE_METHOD = git
 PLUCKFACE_DEPENDENCIES = lv2
