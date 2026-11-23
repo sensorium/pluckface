@@ -1,7 +1,24 @@
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix pset:   <http://lv2plug.in/ns/ext/presets#> .
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 
 <urn:sensorium:pluckface>
 	a lv2:Plugin ;
 	lv2:binary <pluckface@LIB_EXT@>  ;
 	rdfs:seeAlso 	<pluckface.ttl> .
+
+<presets/envelope.ttl>
+	a pset:Preset ;
+	rdfs:seeAlso <presets/envelope.ttl> .
+
+<presets/responsive_autorange.ttl>
+	a pset:Preset ;
+	rdfs:seeAlso <presets/responsive_autorange.ttl> .
+
+<presets/sensitive_fast_autorange.ttl>
+	a pset:Preset ;
+	rdfs:seeAlso <presets/sensitive_fast_autorange.ttl> .
+
+<presets/slow_autorange.ttl>
+	a pset:Preset ;
+	rdfs:seeAlso <presets/slow_autorange.ttl> .

@@ -1,0 +1,47 @@
+@prefix atom: <http://lv2plug.in/ns/ext/atom#> .
+@prefix lv2: <http://lv2plug.in/ns/lv2core#> .
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix state: <http://lv2plug.in/ns/ext/state#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<>
+	a pset:Preset ;
+	lv2:appliesTo <urn:sensorium:pluckface> ;
+	rdfs:label "sensitive-fast-autorange" ;
+	lv2:port [
+		lv2:symbol "auto_normalise" ;
+		pset:value 1.0
+	] , [
+		lv2:symbol "cv_smoothing" ;
+		pset:value 0.89999998
+	] , [
+		lv2:symbol "leaky_decay_seconds" ;
+		pset:value 4.0
+	] , [
+		lv2:symbol "leaky_mix" ;
+		pset:value 0.40000001
+	] , [
+		lv2:symbol "minioi_ms" ;
+		pset:value 56.44444275
+	] , [
+		lv2:symbol "offset_cv_out" ;
+		pset:value -0.5
+	] , [
+		lv2:symbol "onset_method" ;
+		pset:value 0.0
+	] , [
+		lv2:symbol "onset_sensitivity" ;
+		pset:value 0.938209
+	] , [
+		lv2:symbol "scale_cv_out" ;
+		pset:value 0.2
+	] , [
+		lv2:symbol "silence_threshold" ;
+		pset:value -52.0338974
+	] , [
+		lv2:symbol "window_seconds" ;
+		pset:value 4.0
+	] .
+

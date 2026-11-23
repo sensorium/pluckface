@@ -59,6 +59,8 @@ else
 endif
 
 MODGUI_FILES := $(shell find modgui -type f | sort)
+PRESET_FILES := $(wildcard presets/*.ttl)
+BUILT_PRESET_FILES := $(patsubst presets/%.ttl,$(BUILDDIR)presets/%.ttl,$(PRESET_FILES))
 
 ###############################################################################
 # extract versions
@@ -104,7 +106,7 @@ endif
 # build target definitions
 default: all
 
-all: $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(targets)
+all: $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(BUILT_PRESET_FILES) $(targets)
 
 lv2syms:
 	echo "_lv2_descriptor" > lv2syms
@@ -122,6 +124,10 @@ $(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME)_ttl.in Makefile
 	@mkdir -p $(BUILDDIR)
 	sed "s/@VERSION@/lv2:microVersion $(LV2MIC) ;lv2:minorVersion $(LV2MIN) ;/g" \
 		lv2ttl/$(LV2NAME)_ttl.in > $(BUILDDIR)$(LV2NAME).ttl
+
+$(BUILDDIR)presets/%.ttl: presets/%.ttl
+	@mkdir -p $(dir $@)
+	cp $< $@
 
 SRCS = $(BUILDDIR)RingBuffer.cpp
 OBJS = $(SRCS:.cpp=.o)
@@ -160,6 +166,8 @@ install: all
 	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)
 	install -m755 $(BUILDDIR)$(LV2NAME)$(LIB_EXT) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
 	install -m644 $(BUILDDIR)manifest.ttl $(BUILDDIR)$(LV2NAME).ttl $(DESTDIR)$(LV2DIR)/$(BUNDLE)
+	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/presets
+	install -m644 $(BUILT_PRESET_FILES) $(DESTDIR)$(LV2DIR)/$(BUNDLE)/presets
 ifneq ($(MOD),)
 	install -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui
 	install -t $(DESTDIR)$(LV2DIR)/$(BUNDLE)/modgui $(BUILDDIR)modgui/*
@@ -170,6 +178,8 @@ sync-local-bundle: all
 	@mkdir -p $(LOCAL_BUNDLE_DIR)
 	cp $(BUILDDIR)manifest.ttl $(LOCAL_BUNDLE_DIR)/manifest.ttl
 	cp $(BUILDDIR)$(LV2NAME).ttl $(LOCAL_BUNDLE_DIR)/$(LV2NAME).ttl
+	mkdir -p $(LOCAL_BUNDLE_DIR)/presets
+	cp $(BUILT_PRESET_FILES) $(LOCAL_BUNDLE_DIR)/presets/
 	if test -f $(BUILDDIR)$(LV2NAME)$(LIB_EXT); then cp $(BUILDDIR)$(LV2NAME)$(LIB_EXT) $(LOCAL_BUNDLE_DIR)/$(LV2NAME)$(LIB_EXT); fi
 ifneq ($(MOD),)
 	rm -rf $(LOCAL_BUNDLE_DIR)/modgui

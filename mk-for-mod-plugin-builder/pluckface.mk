@@ -19,6 +19,9 @@ define PLUCKFACE_INSTALL_TARGET_CMDS
 	install -m755 $(@D)/build/pluckface.so $(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/
 	install -m644 $(@D)/build/manifest.ttl $(@D)/build/pluckface.ttl \
 		$(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/
+	install -d $(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/presets
+	install -m644 $(@D)/build/presets/*.ttl \
+		$(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/presets/
 	install -d $(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/modgui
 	cp -r $(@D)/build/modgui/* $(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/modgui/
 	chmod -R a+rX $(TARGET_DIR)/usr/lib/lv2/pluckface.lv2/modgui
