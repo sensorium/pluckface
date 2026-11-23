@@ -4,7 +4,7 @@
 #
 ######################################
 # get version tag with: git describe --tags HEAD
-PLUCKFACE_VERSION = v0.0.21
+PLUCKFACE_VERSION = v1.0.0
 PLUCKFACE_SITE = https://github.com/sensorium/pluckface.git
 PLUCKFACE_SITE_METHOD = git
 PLUCKFACE_DEPENDENCIES = lv2
