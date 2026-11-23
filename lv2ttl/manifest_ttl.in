@@ -9,16 +9,20 @@
 
 <presets/envelope.ttl>
 	a pset:Preset ;
+	lv2:appliesTo <urn:sensorium:pluckface> ;
 	rdfs:seeAlso <presets/envelope.ttl> .
 
 <presets/responsive_autorange.ttl>
 	a pset:Preset ;
+	lv2:appliesTo <urn:sensorium:pluckface> ;
 	rdfs:seeAlso <presets/responsive_autorange.ttl> .
 
 <presets/sensitive_fast_autorange.ttl>
 	a pset:Preset ;
+	lv2:appliesTo <urn:sensorium:pluckface> ;
 	rdfs:seeAlso <presets/sensitive_fast_autorange.ttl> .
 
 <presets/slow_autorange.ttl>
 	a pset:Preset ;
+	lv2:appliesTo <urn:sensorium:pluckface> ;
 	rdfs:seeAlso <presets/slow_autorange.ttl> .
