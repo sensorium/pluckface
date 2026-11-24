@@ -9,8 +9,6 @@ AUBIO_MODE ?= system
 STRIP?=strip
 STRIPFLAGS?=-s
 
-pluckface_VERSION?=$(shell git describe --tags HEAD 2>/dev/null\
-									 	| sed 's/-g.*$$//;s/^v//' || echo "LV2")
 ###############################################################################
 LIB_EXT=.so
 BUILDDIR=build/
@@ -28,13 +26,11 @@ UNAME=$(shell uname)
 ifeq ($(UNAME),Darwin)
   LV2LDFLAGS=-dynamiclib
   LIB_EXT=.dylib
-  EXTENDED_RE=-E
   STRIPFLAGS=-u -r -arch all -s lv2syms
   targets+=lv2syms
 else
   LV2LDFLAGS=-Wl,-Bstatic -Wl,-Bdynamic
   LIB_EXT=.so
-  EXTENDED_RE=-r
 endif
 
 ifneq ($(XWIN),)
@@ -61,11 +57,6 @@ endif
 MODGUI_FILES := $(shell find modgui -type f | sort)
 PRESET_FILES := $(wildcard presets/*.ttl)
 BUILT_PRESET_FILES := $(patsubst presets/%.ttl,$(BUILDDIR)presets/%.ttl,$(PRESET_FILES))
-
-###############################################################################
-# extract versions
-LV2VERSION=$(pluckface_VERSION)
-include git2lv2.mk
 
 # check for build-dependencies
 ifeq ($(shell pkg-config --exists lv2 || echo no), no)
@@ -122,8 +113,7 @@ endif
 
 $(BUILDDIR)$(LV2NAME).ttl: lv2ttl/$(LV2NAME)_ttl.in Makefile
 	@mkdir -p $(BUILDDIR)
-	sed "s/@VERSION@/lv2:microVersion $(LV2MIC) ;lv2:minorVersion $(LV2MIN) ;/g" \
-		lv2ttl/$(LV2NAME)_ttl.in > $(BUILDDIR)$(LV2NAME).ttl
+	cp lv2ttl/$(LV2NAME)_ttl.in $(BUILDDIR)$(LV2NAME).ttl
 
 $(BUILDDIR)presets/%.ttl: presets/%.ttl
 	@mkdir -p $(dir $@)

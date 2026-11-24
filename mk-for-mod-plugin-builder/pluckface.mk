@@ -3,16 +3,15 @@
 # pluckface
 #
 ######################################
-# get version tag with: git describe --tags HEAD
-PLUCKFACE_VERSION = v1.0.2
+# get version hash with: git rev-parse HEAD
+PLUCKFACE_VERSION = 
 PLUCKFACE_SITE = https://github.com/sensorium/pluckface.git
 PLUCKFACE_SITE_METHOD = git
 PLUCKFACE_DEPENDENCIES = lv2
 PLUCKFACE_BUNDLES = pluckface.lv2
 
 define PLUCKFACE_BUILD_CMDS
-	$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) MOD=1 AUBIO_MODE=vendored \
-		pluckface_VERSION=$(patsubst v%,%,$(PLUCKFACE_VERSION)) -C $(@D)
+	$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) MOD=1 AUBIO_MODE=vendored -C $(@D)
 endef
 
 define PLUCKFACE_INSTALL_TARGET_CMDS
